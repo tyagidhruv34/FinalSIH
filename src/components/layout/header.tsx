@@ -7,24 +7,16 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  ShieldAlert,
-  LayoutDashboard,
-  MessageSquare,
-  MapPin,
-  Phone,
-  Settings,
-  Menu,
-} from "lucide-react";
+import * as icons from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/status-updates", label: "Status Updates", icon: MessageSquare },
-  { href: "/resource-locator", label: "Resource Locator", icon: MapPin },
-  { href: "/emergency-contacts", label: "Emergency Contacts", icon: Phone },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
+  { href: "/status-updates", label: "Status Updates", icon: "MessageSquare" },
+  { href: "/resource-locator", label: "Resource Locator", icon: "MapPin" },
+  { href: "/emergency-contacts", label: "Emergency Contacts", icon: "Phone" },
+  { href: "/settings", label: "Settings", icon: "Settings" },
 ];
 
 const pageTitles: { [key: string]: string } = {
@@ -34,6 +26,16 @@ const pageTitles: { [key: string]: string } = {
   "/emergency-contacts": "Emergency Contacts",
   "/settings": "Settings",
 };
+
+const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
+  const Icon = icons[name as keyof typeof icons];
+  if (!Icon) {
+    // Fallback or error handling
+    return null;
+  }
+  return <Icon {...props} />;
+};
+
 
 export default function Header() {
   const pathname = usePathname();
@@ -45,14 +47,14 @@ export default function Header() {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon">
-              <Menu className="h-6 w-6" />
+              <icons.Menu className="h-6 w-6" />
               <span className="sr-only">Open navigation menu</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-full max-w-xs p-0">
              <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
                 <div className="flex items-center gap-2.5 p-4 border-b border-sidebar-border">
-                  <ShieldAlert className="h-7 w-7 text-primary" />
+                  <icons.ShieldAlert className="h-7 w-7 text-primary" />
                   <span className="text-xl font-bold tracking-tight">
                     Aapda Guide
                   </span>
@@ -64,7 +66,7 @@ export default function Header() {
                       href={item.href}
                       className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''}`}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <LucideIcon name={item.icon} className="h-4 w-4" />
                       {item.label}
                     </Link>
                   ))}
