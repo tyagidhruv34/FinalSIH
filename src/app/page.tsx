@@ -15,8 +15,9 @@ import { AlertService } from '@/lib/firebase/alerts';
 import type { Alert } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
-const severityStyles = {
+const severityStyles: { [key in Alert['severity']]: string } = {
   "Critical": "bg-red-600 text-white",
   "High": "bg-destructive text-destructive-foreground",
   "Medium": "bg-yellow-500 text-black",
@@ -41,10 +42,9 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         const fetchedAlerts = await AlertService.getAlerts();
+        // Firestore now sorts by timestamp, we only need to sort by severity
         const sortedAlerts = fetchedAlerts.sort((a, b) => {
-            const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
-            if (severityDiff !== 0) return severityDiff;
-            return b.timestamp.toMillis() - a.timestamp.toMillis();
+            return severityOrder[b.severity] - severityOrder[a.severity];
         });
         setAlerts(sortedAlerts);
         setError(null);
