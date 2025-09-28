@@ -5,6 +5,12 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import { auth, signInWithGoogle, signOut as firebaseSignOut, signInWithPhone, verifyOtp } from '@/lib/firebase/auth';
 
+declare global {
+    interface Window {
+        recaptchaVerifier: RecaptchaVerifier;
+    }
+}
+
 type AuthContextType = {
   user: User | null;
   loading: boolean;

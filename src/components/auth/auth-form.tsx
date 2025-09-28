@@ -16,45 +16,45 @@ export default function AuthForm() {
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [recaptcha, setRecaptcha] = useState<RecaptchaVerifier | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !recaptcha) {
-      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        },
-      });
-      setRecaptcha(verifier);
+  const setUpRecaptcha = () => {
+    if (typeof window !== 'undefined') {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response: any) => {
+              // reCAPTCHA solved, allow signInWithPhoneNumber.
+              // onSignInSubmit();
+            },
+        });
     }
-  }, [recaptcha]);
+  }
+
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recaptcha) {
-      toast({ variant: 'destructive', title: 'Error', description: 'reCAPTCHA not ready. Please try again in a moment.' });
-      return;
-    }
     setLoading(true);
+    setUpRecaptcha();
+    const appVerifier = window.recaptchaVerifier;
+
     try {
       // Assuming Indian phone numbers for now
       const fullPhoneNumber = `+91${phoneNumber}`;
-      const result = await signInWithPhone(fullPhoneNumber, recaptcha);
+      const result = await signInWithPhone(fullPhoneNumber, appVerifier);
       setConfirmationResult(result);
       toast({ title: 'OTP Sent!', description: 'Please check your phone for the verification code.' });
     } catch (error: any) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to send OTP. Please try again.' });
-      // Reset reCAPTCHA so user can try again.
-      recaptcha.render().then(widgetId => {
-        // @ts-ignore
-        if (window.grecaptcha) {
-          // @ts-ignore
-          window.grecaptcha.reset(widgetId);
-        }
-      });
+      if (appVerifier) {
+        appVerifier.render().then(widgetId => {
+            // @ts-ignore
+            if (window.grecaptcha) {
+                // @ts-ignore
+                window.grecaptcha.reset(widgetId);
+            }
+        });
+      }
     } finally {
       setLoading(false);
     }
