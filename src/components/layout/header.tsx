@@ -26,6 +26,8 @@ import { useRouter } from "next/navigation";
 const navItems = [
   { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
   { href: "/damage-assessment", label: "Damage Assessment", icon: "Bot" },
+  { href: "/missing-person-report", label: "Report Missing", icon: "PersonStanding" },
+  { href: "/missing-person-finder", label: "Find Person", icon: "Search" },
   { href: "/advisories", label: "Advisories", icon: "Landmark" },
   { href: "/status-updates", label: "Status Updates", icon: "MessageSquare" },
   { href: "/resource-locator", label: "Resource Locator", icon: "MapPin" },
@@ -37,6 +39,8 @@ const navItems = [
 const pageTitles: { [key: string]: string } = {
   "/": "Dashboard",
   "/damage-assessment": "AI Damage Assessment",
+  "/missing-person-report": "Report Missing Person",
+  "/missing-person-finder": "Find Missing Person",
   "/advisories": "Government Advisories",
   "/status-updates": "Community Status",
   "/resource-locator": "Resource Locator",

@@ -1,6 +1,7 @@
 
 
 
+
 import type { LucideIcon } from "lucide-react";
 import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier, Timestamp } from 'firebase/auth';
 import type { GeoPoint } from "firebase/firestore";
@@ -28,7 +29,7 @@ export type StatusUpdate = {
 export type UserStatus = {
     id: string;
     userId: string;
-    userName: string;
+    userName:string;
     userAvatarUrl?: string;
     status: 'safe' | 'help';
     location: GeoPoint;
@@ -64,6 +65,18 @@ export type DamageReport = {
     imageUrl: string;
     location: GeoPoint;
     assessment: AssessDamageOutput;
+    timestamp: any;
+}
+
+export type MissingPerson = {
+    id?: string;
+    reportedBy: string;
+    name: string;
+    age: number;
+    lastSeenLocation: string;
+    contactInfo: string;
+    photoUrl: string; // URL from Firebase Storage
+    faceEmbedding: number[];
     timestamp: any;
 }
 
