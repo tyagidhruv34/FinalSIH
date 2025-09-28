@@ -1,13 +1,15 @@
 import type { LucideIcon } from "lucide-react";
-import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
+import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier, Timestamp } from 'firebase/auth';
 
 export type Alert = {
   id: string;
   title: string;
-  source: string;
-  timestamp: string;
   description: string;
-  severity: "low" | "medium" | "high";
+  severity: "Low" | "Medium" | "High" | "Critical";
+  affectedAreas: string[];
+  type: "Cyclone" | "Flood" | "Earthquake" | "Fire" | "Other";
+  timestamp: Timestamp;
+  createdBy: string;
 };
 
 export type StatusUpdate = {

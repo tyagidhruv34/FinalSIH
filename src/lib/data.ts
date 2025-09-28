@@ -1,31 +1,7 @@
-import type { Alert, StatusUpdate, Resource, EmergencyContact, AlertSource } from "./types";
+import type { StatusUpdate, Resource, EmergencyContact, AlertSource } from "./types";
 
-export const alerts: Alert[] = [
-  {
-    id: "alert-1",
-    title: "Cyclone Warning",
-    source: "National Weather Service",
-    timestamp: "2 hours ago",
-    description: "A severe cyclone is expected to make landfall tomorrow morning. Evacuate low-lying areas.",
-    severity: "high",
-  },
-  {
-    id: "alert-2",
-    title: "Flash Flood Watch",
-    source: "Local Authorities",
-    timestamp: "5 hours ago",
-    description: "Heavy rainfall may cause flash floods in urban areas. Avoid unnecessary travel.",
-    severity: "medium",
-  },
-  {
-    id: "alert-3",
-    title: "Power Outage Update",
-    source: "City Electric",
-    timestamp: "1 hour ago",
-    description: "Power restoration efforts are underway. Expected to be resolved by 8 PM.",
-    severity: "low",
-  },
-];
+// Note: The 'alerts' data is now fetched from Firestore.
+// This file can be used for other static data.
 
 export const statusUpdates: StatusUpdate[] = [
   {
@@ -145,4 +121,11 @@ export const alertSources: AlertSource[] = [
         name: 'Global Disaster Alert System',
         description: 'International system providing alerts on natural disasters worldwide.'
     },
-]
+];
+
+export const indianDistricts: string[] = [
+    "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad", "Chennai", "Kolkata", "Surat", "Pune", "Jaipur"
+];
+
+export const alertTypes: Array<Alert['type']> = ["Cyclone", "Flood", "Earthquake", "Fire", "Other"];
+export const alertSeverities: Array<Alert['severity']> = ["Low", "Medium", "High", "Critical"];
