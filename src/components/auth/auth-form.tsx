@@ -18,23 +18,21 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const setUpRecaptcha = () => {
-    if (typeof window !== 'undefined') {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
-            'callback': (response: any) => {
-              // reCAPTCHA solved, allow signInWithPhoneNumber.
-              // onSignInSubmit();
-            },
-        });
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {
+          // reCAPTCHA solved, you can proceed with sign-in.
+        }
+      });
     }
-  }
+  }, []);
 
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setUpRecaptcha();
     const appVerifier = window.recaptchaVerifier;
 
     try {
@@ -46,14 +44,9 @@ export default function AuthForm() {
     } catch (error: any) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to send OTP. Please try again.' });
-      if (appVerifier) {
-        appVerifier.render().then(widgetId => {
-            // @ts-ignore
-            if (window.grecaptcha) {
-                // @ts-ignore
-                window.grecaptcha.reset(widgetId);
-            }
-        });
+      // Reset reCAPTCHA if something goes wrong
+      if (window.grecaptcha && appVerifier.widgetId !== undefined) {
+        window.grecaptcha.reset(appVerifier.widgetId);
       }
     } finally {
       setLoading(false);
