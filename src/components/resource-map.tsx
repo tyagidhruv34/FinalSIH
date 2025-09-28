@@ -5,13 +5,13 @@ import {
   Map,
   AdvancedMarker,
 } from "@vis.gl/react-google-maps";
-import type { Resource } from "@/lib/types";
+import type { Resource, UserStatus } from "@/lib/types";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
 import * as icons from "lucide-react";
 
 type ResourceMapProps = {
   resources: Resource[];
+  userStatuses: UserStatus[];
 };
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
@@ -23,7 +23,7 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
 };
 
 
-export default function ResourceMap({ resources }: ResourceMapProps) {
+export default function ResourceMap({ resources, userStatuses = [] }: ResourceMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const position = { lat: 28.6139, lng: 77.209 }; // Delhi, India
 
@@ -54,9 +54,10 @@ export default function ResourceMap({ resources }: ResourceMapProps) {
           gestureHandling={"greedy"}
           disableDefaultUI={true}
         >
+          {/* Official Resources Markers */}
           {resources.map((resource) => (
             <AdvancedMarker
-              key={resource.id}
+              key={`res-${resource.id}`}
               position={resource.position}
               title={resource.name}
             >
@@ -71,6 +72,28 @@ export default function ResourceMap({ resources }: ResourceMapProps) {
               </div>
             </AdvancedMarker>
           ))}
+
+           {/* User Status Markers */}
+            {userStatuses.map((status) => {
+              const markerColor = status.status === 'safe' ? 'bg-green-500' : 'bg-red-600';
+              const markerPosition = { lat: status.location.latitude, lng: status.location.longitude };
+
+              return (
+                <AdvancedMarker
+                  key={`user-${status.id}`}
+                  position={markerPosition}
+                  title={`${status.userName} - ${status.status}`}
+                >
+                  <div className="group">
+                    <div className={`w-3 h-3 rounded-full ${markerColor} border-2 border-white shadow-lg`}></div>
+                    <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      <p className="font-bold">{status.userName}</p>
+                      <p>Status: <span className={status.status === 'safe' ? 'text-green-600' : 'text-red-600'}>{status.status}</span></p>
+                    </div>
+                  </div>
+                </AdvancedMarker>
+              )
+            })}
         </Map>
       </APIProvider>
     </div>

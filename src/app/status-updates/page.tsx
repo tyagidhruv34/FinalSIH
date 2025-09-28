@@ -1,69 +1,130 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { statusUpdates } from "@/lib/data";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from '@/hooks/use-toast';
+import { updateUserStatus } from '@/lib/firebase/status';
+import { GeoPoint, serverTimestamp } from 'firebase/firestore';
+import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function StatusUpdatesPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState<'safe' | 'help' | null>(null);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+
+  const handleStatusUpdate = (status: 'safe' | 'help') => {
+    setIsSubmitting(status);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          await updateUserStatus({
+            userId: user.uid,
+            userName: user.displayName || 'Anonymous',
+            userAvatarUrl: user.photoURL || undefined,
+            status,
+            location: new GeoPoint(latitude, longitude),
+            timestamp: serverTimestamp(),
+          });
+          toast({
+            title: "Status Updated",
+            description: `You've been marked as ${status === 'safe' ? 'safe' : 'needing help'}. Your location has been shared.`,
+          });
+           router.push('/resource-locator');
+        } catch (error) {
+          console.error("Error updating status: ", error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not update your status. Please try again.",
+          });
+        } finally {
+          setIsSubmitting(null);
+        }
+      },
+      (error) => {
+        console.error("Error getting location: ", error);
+        toast({
+          variant: "destructive",
+          title: "Location Error",
+          description: "Could not get your location. Please enable location services in your browser.",
+        });
+        setIsSubmitting(null);
+      }
+    );
+  };
+
   return (
-    <div className="grid gap-8 md:grid-cols-3">
-      <div className="md:col-span-1">
-        <Card>
+    <div className="max-w-2xl mx-auto space-y-8">
+       <div className="text-center">
+        <h1 className="text-3xl font-bold tracking-tight">Update Your Status</h1>
+        <p className="text-muted-foreground mt-2">
+          Let your community and rescue teams know your current situation.
+        </p>
+      </div>
+
+      <Card>
           <CardHeader>
-            <CardTitle>Share Your Status</CardTitle>
+            <CardTitle>Are you safe?</CardTitle>
             <CardDescription>
-              Let others know you are safe or if you need help. Your update will
-              be visible to nearby users.
+              Press one of the buttons below. Your location will be recorded to help rescuers and coordinators.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Textarea placeholder="Type your message here. e.g., 'I am safe at home.' or 'Need medical assistance at...'" />
-          </CardContent>
-          <CardFooter>
-            <Button>Post Update</Button>
-          </CardFooter>
-        </Card>
-      </div>
-      <div className="md:col-span-2">
-        <h1 className="text-3xl font-bold tracking-tight mb-4">Community Feed</h1>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              {statusUpdates.map((update, index) => (
-                <div key={update.id}>
-                  <div className="flex items-start gap-4">
-                    <Avatar>
-                      <AvatarImage src={update.userAvatarUrl} alt={update.userName} data-ai-hint="person face" />
-                      <AvatarFallback>{update.userName.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold">{update.userName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {update.timestamp}
-                        </p>
-                      </div>
-                      <p className="mt-1 text-sm text-foreground/90">
-                        {update.message}
-                      </p>
-                    </div>
-                  </div>
-                  {index < statusUpdates.length - 1 && <Separator className="mt-6" />}
-                </div>
-              ))}
-            </div>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                className="h-24 text-xl"
+                onClick={() => handleStatusUpdate('safe')}
+                disabled={!!isSubmitting}
+              >
+                 {isSubmitting === 'safe' ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <><CheckCircle className="mr-2 h-8 w-8" /> I'M SAFE</>
+                )}
+              </Button>
+              <Button
+                variant="destructive"
+                className="h-24 text-xl"
+                onClick={() => handleStatusUpdate('help')}
+                disabled={!!isSubmitting}
+              >
+                {isSubmitting === 'help' ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <><AlertTriangle className="mr-2 h-8 w-8" /> NEED HELP</>
+                )}
+              </Button>
           </CardContent>
         </Card>
-      </div>
+        
+        <Card className="bg-accent/20 border-accent">
+            <CardHeader>
+                <CardTitle>Privacy Note</CardTitle>
+                <CardDescription>
+                    Your location will only be shared on the community map for disaster response purposes. Your status will be visible to other users of this app.
+                </CardDescription>
+            </CardHeader>
+        </Card>
+
     </div>
   );
 }

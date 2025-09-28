@@ -1,6 +1,8 @@
 
+
 import type { LucideIcon } from "lucide-react";
 import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier, Timestamp } from 'firebase/auth';
+import type { GeoPoint } from "firebase/firestore";
 
 export type Alert = {
   id: string;
@@ -20,6 +22,39 @@ export type StatusUpdate = {
   timestamp: string;
   message: string;
 };
+
+export type UserStatus = {
+    id: string;
+    userId: string;
+    userName: string;
+    userAvatarUrl?: string;
+    status: 'safe' | 'help';
+    location: GeoPoint;
+    timestamp: Timestamp;
+};
+
+export type ResourceNeed = {
+    id: string;
+    userId: string;
+    item: 'Food' | 'Water' | 'Medicine' | 'Shelter';
+    quantity: number;
+    urgency: 'Low' | 'Medium' | 'High';
+    location: GeoPoint;
+    contactInfo: string;
+    fulfilled: boolean;
+    timestamp: Timestamp;
+}
+
+export type ResourceOffer = {
+    id: string;
+    userId: string;
+    item: 'Food' | 'Water' | 'Medicine' | 'Shelter';
+    quantity: number;
+    location: GeoPoint;
+    contactInfo: string;
+    timestamp: Timestamp;
+}
+
 
 export type Resource = {
   id: string;
