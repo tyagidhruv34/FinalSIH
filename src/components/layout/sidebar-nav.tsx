@@ -9,9 +9,13 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import * as icons from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
@@ -24,7 +28,6 @@ const navItems = [
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
   const Icon = icons[name as keyof typeof icons];
   if (!Icon) {
-    // Fallback or error handling
     return null;
   }
   return <Icon {...props} />;
@@ -33,6 +36,7 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   return (
     <Sidebar className="hidden md:flex md:flex-col" variant="sidebar">
@@ -65,6 +69,27 @@ export default function SidebarNav() {
           ))}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter>
+        {user ? (
+            <div className="flex items-center gap-3 p-2">
+              <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.photoURL || ''} alt={user.displayName || user.email || ''} />
+                  <AvatarFallback>{user.displayName?.[0] || user.email?.[0]}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col text-sm">
+                  <span className="font-semibold text-sidebar-foreground">{user.displayName || 'User'}</span>
+                  <span className="text-xs text-muted-foreground">{user.email || user.phoneNumber}</span>
+              </div>
+              <Button variant="ghost" size="icon" onClick={signOut} className="ml-auto">
+                  <LucideIcon name="LogOut" className="h-4 w-4" />
+              </Button>
+            </div>
+        ) : (
+          <Button asChild className="w-full">
+            <Link href="/login">Login</Link>
+          </Button>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }
