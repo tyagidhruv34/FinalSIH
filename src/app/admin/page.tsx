@@ -27,10 +27,6 @@ import { useRouter } from 'next/navigation';
 import { indianDistricts, alertTypes, alertSeverities } from '@/lib/data';
 import { AlertService } from '@/lib/firebase/alerts';
 import { useToast } from '@/hooks/use-toast';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import type { Alert } from '@/lib/types';
 
@@ -50,7 +46,6 @@ export default function AdminAlertPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [open, setOpen] = useState(false)
 
   const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<AlertFormValues>({
     resolver: zodResolver(alertFormSchema),
@@ -174,49 +169,35 @@ export default function AdminAlertPage() {
 
             <div className="space-y-2">
               <Label>Affected Areas (Districts)</Label>
-               <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-between h-auto"
-                  >
-                    <div className="flex gap-1 flex-wrap">
-                      {selectedAreas.length > 0 ? selectedAreas.map(area => <Badge key={area} variant="secondary">{area}</Badge>) : "Select districts..."}
-                    </div>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                  <Command>
-                    <CommandInput placeholder="Search districts..." />
-                    <CommandEmpty>No district found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-auto">
-                      {indianDistricts.map((district) => (
-                        <CommandItem
-                          key={district}
-                          onSelect={() => {
-                            const currentAreas = watch('affectedAreas');
-                            const newAreas = currentAreas.includes(district)
-                              ? currentAreas.filter(a => a !== district)
-                              : [...currentAreas, district];
-                            setValue('affectedAreas', newAreas, { shouldValidate: true });
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedAreas.includes(district) ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {district}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+               <Controller
+                  name="affectedAreas"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={(value) => {
+                        const currentAreas = field.value || [];
+                        const newAreas = currentAreas.includes(value)
+                          ? currentAreas.filter((a) => a !== value)
+                          : [...currentAreas, value];
+                        setValue('affectedAreas', newAreas, { shouldValidate: true });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select districts..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {indianDistricts.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <div className="flex gap-1 flex-wrap mt-2">
+                    {selectedAreas.map(area => <Badge key={area} variant="secondary">{area}</Badge>)}
+                </div>
               {errors.affectedAreas && <p className="text-sm text-destructive">{errors.affectedAreas.message}</p>}
             </div>
 
