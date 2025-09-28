@@ -1,8 +1,10 @@
 
 
+
 import type { LucideIcon } from "lucide-react";
 import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier, Timestamp } from 'firebase/auth';
 import type { GeoPoint } from "firebase/firestore";
+import type { AssessDamageOutput } from "@/ai/flows/assess-damage-flow";
 
 export type Alert = {
   id: string;
@@ -53,6 +55,16 @@ export type ResourceOffer = {
     location: GeoPoint;
     contactInfo: string;
     timestamp: Timestamp;
+}
+
+export type DamageReport = {
+    id?: string;
+    userId: string;
+    description: string;
+    imageUrl: string;
+    location: GeoPoint;
+    assessment: AssessDamageOutput;
+    timestamp: any;
 }
 
 
