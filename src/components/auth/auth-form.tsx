@@ -33,7 +33,10 @@ export default function AuthForm() {
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recaptcha) return;
+    if (!recaptcha) {
+      toast({ variant: 'destructive', title: 'Error', description: 'reCAPTCHA not ready. Please try again in a moment.' });
+      return;
+    }
     setLoading(true);
     try {
       // Assuming Indian phone numbers for now
@@ -41,12 +44,16 @@ export default function AuthForm() {
       const result = await signInWithPhone(fullPhoneNumber, recaptcha);
       setConfirmationResult(result);
       toast({ title: 'OTP Sent!', description: 'Please check your phone for the verification code.' });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to send OTP. Please try again.' });
+      toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to send OTP. Please try again.' });
+      // Reset reCAPTCHA so user can try again.
       recaptcha.render().then(widgetId => {
         // @ts-ignore
-        grecaptcha.reset(widgetId);
+        if (window.grecaptcha) {
+          // @ts-ignore
+          window.grecaptcha.reset(widgetId);
+        }
       });
     } finally {
       setLoading(false);
@@ -60,9 +67,9 @@ export default function AuthForm() {
     try {
       await verifyOtp(confirmationResult, otp);
       toast({ title: 'Success!', description: 'You are now logged in.' });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Invalid OTP. Please try again.' });
+      toast({ variant: 'destructive', title: 'Error', description: error.message || 'Invalid OTP. Please try again.' });
     } finally {
       setLoading(false);
     }
