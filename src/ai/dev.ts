@@ -1,1 +1,6 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/flag-duplicate-updates.ts';
+import '@/ai/flows/summarize-alerts.ts';
+import '@/ai/flows/personalized-alert-source-selection.ts';
