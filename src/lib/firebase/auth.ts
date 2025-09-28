@@ -10,12 +10,11 @@ import {
   ConfirmationResult,
   User
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
-import app from './firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import app, { db } from './firebase';
 import type { UserProfile } from '@/lib/types';
 
 export const auth = getAuth(app);
-export const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();
 
