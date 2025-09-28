@@ -1,4 +1,7 @@
+
 import type { StatusUpdate, Resource, EmergencyContact, AlertSource } from "./types";
+import type { Alert } from './types';
+
 
 // Note: The 'alerts' data is now fetched from Firestore.
 // This file can be used for other static data.
@@ -66,6 +69,14 @@ export const resources: Resource[] = [
     address: "101, Civic Center, New Delhi",
     position: { lat: 28.6000, lng: 77.2000 },
     icon: "Shield",
+  },
+  {
+    id: "res-5",
+    name: "Grand Hotel",
+    type: "Hotel",
+    address: "202, Luxury Lane, New Delhi",
+    position: { lat: 28.6250, lng: 77.2150 },
+    icon: "Bed",
   },
 ];
 

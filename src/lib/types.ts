@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from "lucide-react";
 import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier, Timestamp } from 'firebase/auth';
 
@@ -23,7 +24,7 @@ export type StatusUpdate = {
 export type Resource = {
   id: string;
   name: string;
-  type: "Shelter" | "Hospital" | "Food & Water" | "Help Center";
+  type: "Shelter" | "Hospital" | "Food & Water" | "Help Center" | "Hotel";
   address: string;
   position: { lat: number; lng: number };
   icon: string;

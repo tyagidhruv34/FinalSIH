@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -24,6 +25,7 @@ import { useRouter } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
+  { href: "/advisories", label: "Advisories", icon: "Landmark" },
   { href: "/status-updates", label: "Status Updates", icon: "MessageSquare" },
   { href: "/resource-locator", label: "Resource Locator", icon: "MapPin" },
   { href: "/emergency-contacts", label: "Emergency Contacts", icon: "Phone" },
@@ -33,6 +35,7 @@ const navItems = [
 
 const pageTitles: { [key: string]: string } = {
   "/": "Dashboard",
+  "/advisories": "Government Advisories",
   "/status-updates": "Community Status",
   "/resource-locator": "Resource Locator",
   "/emergency-contacts": "Emergency Contacts",
@@ -99,7 +102,14 @@ export default function Header() {
       
       <h1 className="text-xl font-semibold md:hidden">{pageTitle}</h1>
 
-      <div>
+      <div className="flex items-center gap-4">
+        <Button asChild variant="destructive">
+            <Link href="/resource-locator">
+                <icons.Siren className="mr-2 h-4 w-4" />
+                SOS
+            </Link>
+        </Button>
+
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -19,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
+  { href: "/advisories", label: "Advisories", icon: "Landmark" },
   { href: "/status-updates", label: "Status Updates", icon: "MessageSquare" },
   { href: "/resource-locator", label: "Resource Locator", icon: "MapPin" },
   { href: "/emergency-contacts", label: "Emergency Contacts", icon: "Phone" },
