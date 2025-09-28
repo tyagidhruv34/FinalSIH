@@ -59,11 +59,13 @@ export default function Header() {
                 </div>
                 <nav className="flex-1 space-y-2 p-4">
                   {navItems.map((item) => (
-                    <Link key={item.href} href={item.href} legacyBehavior passHref>
-                      <a className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''}`}>
-                        <item.icon className="h-4 w-4" />
-                        {item.label}
-                      </a>
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''}`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
                     </Link>
                   ))}
                 </nav>
