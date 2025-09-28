@@ -10,6 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 import { ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import { auth } from '@/lib/firebase/auth';
 
+declare global {
+    interface Window {
+        recaptchaVerifier?: RecaptchaVerifier;
+        grecaptcha?: any;
+    }
+}
+
 export default function AuthForm() {
   const { signInWithGoogle, signInWithPhone, verifyOtp } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -19,34 +26,36 @@ export default function AuthForm() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !window.recaptchaVerifier) {
+    if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
-        'callback': (response: any) => {
+        'callback': () => {
           // reCAPTCHA solved, you can proceed with sign-in.
         }
       });
     }
   }, []);
 
-
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const appVerifier = window.recaptchaVerifier;
+    
+    if (!window.recaptchaVerifier) {
+        toast({ variant: 'destructive', title: 'Error', description: 'reCAPTCHA not initialized. Please refresh.' });
+        setLoading(false);
+        return;
+    }
 
     try {
-      // Assuming Indian phone numbers for now
       const fullPhoneNumber = `+91${phoneNumber}`;
-      const result = await signInWithPhone(fullPhoneNumber, appVerifier);
+      const result = await signInWithPhone(fullPhoneNumber, window.recaptchaVerifier);
       setConfirmationResult(result);
       toast({ title: 'OTP Sent!', description: 'Please check your phone for the verification code.' });
     } catch (error: any) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to send OTP. Please try again.' });
-      // Reset reCAPTCHA if something goes wrong
-      if (window.grecaptcha && appVerifier.widgetId !== undefined) {
-        window.grecaptcha.reset(appVerifier.widgetId);
+      if (window.grecaptcha && window.recaptchaVerifier) {
+        window.grecaptcha.reset(window.recaptchaVerifier.widgetId);
       }
     } finally {
       setLoading(false);
@@ -71,7 +80,7 @@ export default function AuthForm() {
   return (
     <div className="space-y-6">
        <div id="recaptcha-container"></div>
-      <Button variant="outline" className="w-full" onClick={() => signInWithGoogle()}>
+      <Button variant="outline" className="w-full" onClick={signInWithGoogle}>
         <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
           <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
