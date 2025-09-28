@@ -1,5 +1,4 @@
 import type { Alert, StatusUpdate, Resource, EmergencyContact, AlertSource } from "./types";
-import { Shield, Home, Stethoscope, Utensils, Siren, Globe, Building } from "lucide-react";
 
 export const alerts: Alert[] = [
   {
@@ -66,7 +65,7 @@ export const resources: Resource[] = [
     type: "Shelter",
     address: "123, Main Road, New Delhi",
     position: { lat: 28.6139, lng: 77.2090 },
-    icon: Home,
+    icon: "Home",
   },
   {
     id: "res-2",
@@ -74,7 +73,7 @@ export const resources: Resource[] = [
     type: "Hospital",
     address: "456, Health Ave, New Delhi",
     position: { lat: 28.6330, lng: 77.2167 },
-    icon: Stethoscope,
+    icon: "Stethoscope",
   },
   {
     id: "res-3",
@@ -82,7 +81,7 @@ export const resources: Resource[] = [
     type: "Food & Water",
     address: "789, Park Street, New Delhi",
     position: { lat: 28.6200, lng: 77.2300 },
-    icon: Utensils,
+    icon: "Utensils",
   },
    {
     id: "res-4",
@@ -90,7 +89,7 @@ export const resources: Resource[] = [
     type: "Help Center",
     address: "101, Civic Center, New Delhi",
     position: { lat: 28.6000, lng: 77.2000 },
-    icon: Shield,
+    icon: "Shield",
   },
 ];
 
@@ -100,28 +99,28 @@ export const emergencyContacts: EmergencyContact[] = [
         name: 'National Disaster Response Force (NDRF)',
         description: 'Primary agency for specialized response to natural and man-made disasters.',
         phone: '1078',
-        icon: Shield
+        icon: "Shield"
     },
     {
         id: 'contact-2',
         name: 'Police',
         description: 'For law and order, and immediate on-ground assistance.',
         phone: '100',
-        icon: Siren
+        icon: "Siren"
     },
     {
         id: 'contact-3',
         name: 'Ambulance / Medical Help',
         description: 'For medical emergencies and first aid.',
         phone: '102',
-        icon: Stethoscope
+        icon: "Stethoscope"
     },
     {
         id: 'contact-4',
         name: 'Fire Department',
         description: 'For fire-related emergencies and rescue.',
         phone: '101',
-        icon: Utensils
+        icon: "Utensils"
     }
 ];
 

@@ -23,7 +23,7 @@ export type Resource = {
   type: "Shelter" | "Hospital" | "Food & Water" | "Help Center";
   address: string;
   position: { lat: number; lng: number };
-  icon: LucideIcon;
+  icon: string;
 };
 
 export type EmergencyContact = {
@@ -31,7 +31,7 @@ export type EmergencyContact = {
   name: string;
   description: string;
   phone: string;
-  icon: LucideIcon;
+  icon: string;
 };
 
 export type AlertSource = {

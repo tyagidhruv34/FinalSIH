@@ -6,6 +6,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { emergencyContacts } from "@/lib/data";
+import * as icons from "lucide-react";
+
+const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
+  const Icon = icons[name as keyof typeof icons];
+  if (!Icon) {
+    return null;
+  }
+  return <Icon {...props} />;
+};
 
 export default function EmergencyContactsPage() {
   return (
@@ -23,7 +32,7 @@ export default function EmergencyContactsPage() {
             <CardHeader>
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <contact.icon className="h-6 w-6" />
+                  <LucideIcon name={contact.icon} className="h-6 w-6" />
                 </div>
                 <div>
                   <CardTitle>{contact.name}</CardTitle>

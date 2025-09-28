@@ -6,6 +6,16 @@ import {
 } from "@/components/ui/card";
 import ResourceMap from "@/components/resource-map";
 import { resources } from "@/lib/data";
+import * as icons from "lucide-react";
+
+const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
+  const Icon = icons[name as keyof typeof icons];
+  if (!Icon) {
+    return null;
+  }
+  return <Icon {...props} />;
+};
+
 
 export default function ResourceLocatorPage() {
   return (
@@ -31,7 +41,7 @@ export default function ResourceLocatorPage() {
                 {resources.map((resource) => (
                   <li key={resource.id} className="flex items-start gap-4">
                     <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <resource.icon className="h-5 w-5" />
+                      <LucideIcon name={resource.icon} className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="font-semibold">{resource.name}</h3>

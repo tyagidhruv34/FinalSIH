@@ -8,10 +8,20 @@ import {
 import type { Resource } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
+import * as icons from "lucide-react";
 
 type ResourceMapProps = {
   resources: Resource[];
 };
+
+const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
+  const Icon = icons[name as keyof typeof icons];
+  if (!Icon) {
+    return null;
+  }
+  return <Icon {...props} />;
+};
+
 
 export default function ResourceMap({ resources }: ResourceMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -52,7 +62,7 @@ export default function ResourceMap({ resources }: ResourceMapProps) {
             >
               <div className="group">
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer transition-transform group-hover:scale-110 shadow-md">
-                   <resource.icon className="h-5 w-5 text-primary-foreground" />
+                   <LucideIcon name={resource.icon} className="h-5 w-5 text-primary-foreground" />
                 </div>
                  <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <p className="font-bold">{resource.name}</p>
