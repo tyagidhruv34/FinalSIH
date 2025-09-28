@@ -57,20 +57,8 @@ export const signInWithGoogle = async () => {
   }
 };
 
-export const setupRecaptcha = (containerId: string) => {
-    if (typeof window !== 'undefined') {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-            'size': 'invisible',
-            'callback': (response: any) => {
-                // reCAPTCHA solved, allow signInWithPhoneNumber.
-            }
-        });
-    }
-};
-
-export const signInWithPhone = async (phoneNumber: string): Promise<ConfirmationResult> => {
-    const appVerifier = window.recaptchaVerifier;
-    return signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+export const signInWithPhone = async (phoneNumber: string, verifier: RecaptchaVerifier): Promise<ConfirmationResult> => {
+    return signInWithPhoneNumber(auth, phoneNumber, verifier);
 };
 
 export const verifyOtp = async (confirmationResult: ConfirmationResult, otp: string) => {
@@ -90,9 +78,3 @@ export const signOut = async () => {
 export const onAuthUserChanged = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
 };
-
-declare global {
-  interface Window {
-    recaptchaVerifier: RecaptchaVerifier;
-  }
-}

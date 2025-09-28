@@ -3,13 +3,12 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { setupRecaptcha } from '@/lib/firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '../ui/separator';
-import { ConfirmationResult } from 'firebase/auth';
+import { ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
+import { auth } from '@/lib/firebase/auth';
 
 export default function AuthForm() {
   const { signInWithGoogle, signInWithPhone, verifyOtp } = useAuth();
@@ -17,24 +16,38 @@ export default function AuthForm() {
   const [otp, setOtp] = useState('');
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [recaptcha, setRecaptcha] = useState<RecaptchaVerifier | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    setupRecaptcha('recaptcha-container');
-  }, []);
+    if (typeof window !== 'undefined' && !recaptcha) {
+      const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {
+          // reCAPTCHA solved, allow signInWithPhoneNumber.
+        },
+      });
+      setRecaptcha(verifier);
+    }
+  }, [recaptcha]);
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!recaptcha) return;
     setLoading(true);
     try {
       // Assuming Indian phone numbers for now
       const fullPhoneNumber = `+91${phoneNumber}`;
-      const result = await signInWithPhone(fullPhoneNumber);
+      const result = await signInWithPhone(fullPhoneNumber, recaptcha);
       setConfirmationResult(result);
       toast({ title: 'OTP Sent!', description: 'Please check your phone for the verification code.' });
     } catch (error) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to send OTP. Please try again.' });
+      recaptcha.render().then(widgetId => {
+        // @ts-ignore
+        grecaptcha.reset(widgetId);
+      });
     } finally {
       setLoading(false);
     }
@@ -57,6 +70,7 @@ export default function AuthForm() {
 
   return (
     <div className="space-y-6">
+       <div id="recaptcha-container"></div>
       <Button variant="outline" className="w-full" onClick={() => signInWithGoogle()}>
         <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
@@ -120,7 +134,6 @@ export default function AuthForm() {
         </form>
       )}
 
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

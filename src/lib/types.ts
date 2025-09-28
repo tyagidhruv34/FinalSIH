@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { User as FirebaseUser } from 'firebase/auth';
+import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 
 export type Alert = {
   id: string;
@@ -54,7 +54,7 @@ export type AuthContextType = {
   user: FirebaseUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithPhone: (phoneNumber: string) => Promise<any>;
-  verifyOtp: (confirmationResult: any, otp: string) => Promise<void>;
+  signInWithPhone: (phoneNumber: string, verifier: RecaptchaVerifier) => Promise<ConfirmationResult>;
+  verifyOtp: (confirmationResult: ConfirmationResult, otp: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
