@@ -22,10 +22,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 
 const severityStyles: { [key in Alert['severity']]: string } = {
-  "Critical": "bg-red-600 text-white",
+  "Critical": "bg-accent text-accent-foreground",
   "High": "bg-destructive text-destructive-foreground",
   "Medium": "bg-yellow-500 text-black",
-  "Low": "bg-blue-500 text-white"
+  "Low": "bg-primary/80 text-primary-foreground"
 };
 
 const severityOrder: { [key in Alert['severity']]: number } = {
@@ -45,11 +45,10 @@ export default function DashboardPage() {
   useEffect(() => {
     setLoading(true);
 
-    // Listen for real-time alerts
     const alertsQuery = query(
         collection(db, 'alerts'),
         orderBy('timestamp', 'desc'),
-        limit(10) // Limit to the 10 most recent alerts
+        limit(10)
     );
 
     const unsubscribeAlerts = onSnapshot(alertsQuery, (querySnapshot) => {
@@ -68,7 +67,6 @@ export default function DashboardPage() {
         setLoading(false);
     });
 
-    // Listen for real-time help requests
     const helpRequestQuery = query(
         collection(db, 'user_status'), 
         where('status', '==', 'help'),
@@ -105,13 +103,13 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline"><ListFilter className="mr-2"/> Filter</Button>
-            <Button variant="outline" asChild><Link href="/resource-locator"><Map className="mr-2"/> Map View</Link></Button>
+            <Button variant="outline"><ListFilter className="mr-2 h-4 w-4"/> Filter</Button>
+            <Button asChild><Link href="/resource-locator"><Map className="mr-2 h-4 w-4"/> Map View</Link></Button>
         </div>
       </div>
       
       <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6">
             <h2 className="text-2xl font-semibold tracking-tight">Live Alerts</h2>
              {loading && (
                 <div className="grid gap-6 md:grid-cols-2">
@@ -143,59 +141,58 @@ export default function DashboardPage() {
               )}
 
               {!loading && !error && alerts.length === 0 && (
-                <Card>
-                    <CardHeader>
+                <Card className="flex items-center justify-center h-64">
+                    <div className="text-center">
                         <CardTitle>All Clear!</CardTitle>
                         <CardDescription>There are no active alerts right now.</CardDescription>
-                    </CardHeader>
+                    </div>
                 </Card>
               )}
 
               {!loading && !error && alerts.length > 0 && (
                 <div className="grid gap-6 md:grid-cols-2">
                   {alerts.map((alert) => (
-                    <Card key={alert.id} className="flex flex-col">
-                      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                        <div className="space-y-1">
+                    <Card key={alert.id} className={cn("flex flex-col border-l-4", `border-${severityStyles[alert.severity].split(' ')[0].replace('bg-','')}_`)}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between">
                             <CardTitle className="text-lg font-medium">
                                 {alert.title}
                             </CardTitle>
-                            <Badge className={cn(severityStyles[alert.severity])}>
+                            <Badge className={cn(severityStyles[alert.severity], 'rounded-md')}>
                                 {alert.severity}
                             </Badge>
                         </div>
-                        <AlertTriangle className="h-5 w-5 text-muted-foreground" />
+                         <p className="text-sm font-medium text-muted-foreground pt-1">{alert.type}</p>
                       </CardHeader>
-                      <CardContent className="flex-1 flex flex-col">
-                         <p className="text-sm font-medium text-muted-foreground">{alert.type}</p>
+                      <CardContent className="flex-1 flex flex-col pt-2">
                         <p className="mt-2 text-sm text-foreground/80 flex-1">
                           {alert.description}
                         </p>
                         <div className="mt-4">
                             <h4 className="text-xs font-semibold text-muted-foreground mb-2">AFFECTED AREAS</h4>
                             <div className="flex flex-wrap gap-1">
-                                {alert.affectedAreas.map(area => <Badge key={area} variant="outline">{area}</Badge>)}
+                                {alert.affectedAreas.map(area => <Badge key={area} variant="secondary">{area}</Badge>)}
                             </div>
                         </div>
-                        {alert.timestamp && (
-                            <div className="mt-4 flex items-center text-xs text-muted-foreground">
-                              <Clock className="mr-1 h-3 w-3" />
+                      </CardContent>
+                       {alert.timestamp && (
+                            <div className="px-6 pb-4 flex items-center text-xs text-muted-foreground">
+                              <Clock className="mr-1.5 h-3 w-3" />
                               <span>{formatDistanceToNow(alert.timestamp.toDate())} ago</span>
                             </div>
                         )}
-                      </CardContent>
                     </Card>
                   ))}
                 </div>
               )}
           </div>
 
-          <div className="lg:col-span-1 space-y-8">
+          <div className="lg:col-span-1 space-y-6">
               <h2 className="text-2xl font-semibold tracking-tight">Community Needs</h2>
                <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Users className="h-6 w-6"/>
+                        <Users className="h-6 w-6 text-primary"/>
                         Recent Help Requests
                     </CardTitle>
                 </CardHeader>
@@ -224,15 +221,15 @@ export default function DashboardPage() {
                                         <AvatarImage src={req.userAvatarUrl} alt={req.userName} />
                                         <AvatarFallback>{req.userName.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <div>
+                                    <div className='flex-1'>
                                         <p className="font-semibold text-sm">{req.userName}</p>
                                         <p className="text-xs text-destructive font-semibold">Needs Help</p>
-                                        {req.timestamp && (
-                                            <p className="text-xs text-muted-foreground">
-                                                {formatDistanceToNow(req.timestamp.toDate())} ago
-                                            </p>
-                                        )}
                                     </div>
+                                     {req.timestamp && (
+                                        <p className="text-xs text-muted-foreground self-start">
+                                            {formatDistanceToNow(req.timestamp.toDate(), { addSuffix: true })}
+                                        </p>
+                                    )}
                                 </li>
                             ))}
                         </ul>

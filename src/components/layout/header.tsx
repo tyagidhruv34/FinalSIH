@@ -2,7 +2,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Sheet,
   SheetContent,
@@ -52,24 +51,6 @@ const navItems = [
   { href: "/feedback", label: "Feedback", icon: "Megaphone" },
 ];
 
-const pageTitles: { [key: string]: string } = {
-  "/": "Dashboard",
-  "/learning-hub": "Learning Hub",
-  "/damage-assessment": "AI Damage Assessment",
-  "/risk-assessment": "AI Risk Assessment",
-  "/missing-person-report": "Report Missing Person",
-  "/missing-person-finder": "Find Missing Person",
-  "/advisories": "Government Advisories",
-  "/status-updates": "Community Status",
-  "/resource-locator": "Resource Locator",
-  "/emergency-contacts": "Emergency Contacts",
-  "/settings": "Settings",
-  "/profile": "Profile",
-  "/login": "Login",
-  "/admin": "Admin Panel",
-  "/feedback": "Feedback",
-};
-
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
   const Icon = icons[name as keyof typeof icons];
   if (!Icon) {
@@ -81,7 +62,6 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
 
 export default function Header() {
   const pathname = usePathname();
-  const pageTitle = pageTitles[pathname] || "Aapda Guide";
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
@@ -97,7 +77,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-sm sm:px-6 md:justify-end">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:justify-end">
       <div className="md:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -114,12 +94,12 @@ export default function Header() {
                     Aapda Guide
                   </span>
                 </div>
-                <nav className="flex-1 space-y-2 p-4">
+                <nav className="flex-1 space-y-1 p-2">
                   {navItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''}`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold' : 'font-medium'}`}
                     >
                       <LucideIcon name={item.icon} className="h-4 w-4" />
                       {item.label}
@@ -131,16 +111,14 @@ export default function Header() {
         </Sheet>
       </div>
       
-      <h1 className="text-xl font-semibold md:hidden">{pageTitle}</h1>
-
       <div className="flex items-center gap-4">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={!user || isSubmitting}>
+            <Button variant="destructive" disabled={!user || !!isSubmitting} className="font-semibold shadow-sm hover:bg-destructive/90">
               {isSubmitting ? (
                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <icons.Siren className="mr-2 h-4 w-4" />
+                <icons.Siren className="mr-2 h-5 w-5" />
               )}
                 SOS
             </Button>
@@ -163,8 +141,8 @@ export default function Header() {
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9">
                   <AvatarImage src={user.photoURL || ''} alt={user.displayName || user.email || ''} />
                   <AvatarFallback>{user.displayName?.[0] || user.email?.[0]}</AvatarFallback>
                 </Avatar>
