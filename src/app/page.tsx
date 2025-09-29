@@ -217,9 +217,11 @@ export default function DashboardPage() {
                                     <div>
                                         <p className="font-semibold text-sm">{req.userName}</p>
                                         <p className="text-xs text-destructive font-semibold">Needs Help</p>
-                                        <p className="text-xs text-muted-foreground">
-                                           {formatDistanceToNow(req.timestamp.toDate())} ago
-                                        </p>
+                                        {req.timestamp && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {formatDistanceToNow(req.timestamp.toDate())} ago
+                                            </p>
+                                        )}
                                     </div>
                                 </li>
                             ))}
