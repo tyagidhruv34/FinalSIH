@@ -68,9 +68,9 @@ export function useStatusUpdater() {
             submitStatus(undefined);
           },
           {
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 0
+              enableHighAccuracy: false,
+              timeout: 5000,
+              maximumAge: 60000
           }
         );
     });
@@ -78,4 +78,3 @@ export function useStatusUpdater() {
 
   return { isSubmitting, handleStatusUpdate };
 }
-
