@@ -25,19 +25,23 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const isPhoneAuthDisabled = true; // Temporarily disable phone auth
+
   useEffect(() => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': () => {
-          // reCAPTCHA solved, you can proceed with sign-in.
-        }
-      });
-    }
-  }, []);
+    if (isPhoneAuthDisabled || window.recaptchaVerifier) return;
+    
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      'size': 'invisible',
+      'callback': () => {
+        // reCAPTCHA solved, you can proceed with sign-in.
+      }
+    });
+  }, [isPhoneAuthDisabled]);
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isPhoneAuthDisabled) return;
+    
     setLoading(true);
     
     if (!window.recaptchaVerifier) {
@@ -64,7 +68,8 @@ export default function AuthForm() {
 
   const handleOtpVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirmationResult) return;
+    if (isPhoneAuthDisabled || !confirmationResult) return;
+
     setLoading(true);
     try {
       await verifyOtp(confirmationResult, otp);
@@ -97,12 +102,16 @@ export default function AuthForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            {isPhoneAuthDisabled ? 'Sign in with Google to continue' : 'Or continue with'}
           </span>
         </div>
       </div>
 
-      {!confirmationResult ? (
+      {isPhoneAuthDisabled ? (
+        <div className="text-center text-sm text-muted-foreground">
+          <p>Phone sign-in is temporarily unavailable. Please use Google Sign-In.</p>
+        </div>
+      ) : !confirmationResult ? (
         <form onSubmit={handlePhoneSignIn} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
