@@ -41,8 +41,9 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [location, setLocation] = useState<GeoPoint | null>(null);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
 
-  const { control, handleSubmit, formState: { errors }, reset } = useForm<ResourceNeedFormValues>({
+  const { control, handleSubmit, formState: { errors }, reset, setValue } = useForm<ResourceNeedFormValues>({
     resolver: zodResolver(resourceNeedSchema),
     defaultValues: {
         item: 'Water',
@@ -54,36 +55,36 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
 
   useEffect(() => {
     if (open) {
-      // Reset state when dialog opens
+      // Reset state and prefill contact info when dialog opens
       setLocation(null);
+      setIsLocationLoading(true);
+      if(user && (user.email || user.phoneNumber)) {
+        setValue('contactInfo', user.email || user.phoneNumber || '');
+      }
       
       // Pre-fetch location
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation(new GeoPoint(position.coords.latitude, position.coords.longitude));
+          setIsLocationLoading(false);
         },
         (err) => {
           console.warn(`ERROR(${err.code}): ${err.message}`);
-          // Don't close the form, just warn the user. They can try submitting again.
+          setIsLocationLoading(false);
           toast({
             variant: "destructive",
             title: "Location Error",
-            description: "Could not get your location. Please enable location services to submit a request.",
+            description: "Could not get your location. Your request will be submitted without location data.",
           });
         }
       );
     }
-  }, [open, toast]);
+  }, [open, toast, user, setValue]);
 
   const onSubmit = async (data: ResourceNeedFormValues) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Not Authenticated', description: 'You must be logged in to make a request.' });
       return;
-    }
-    
-    if (!location) {
-        toast({ variant: 'destructive', title: 'Location Not Ready', description: 'Location is not available yet. Please wait a moment and try again.' });
-        return;
     }
 
     setIsSubmitting(true);
@@ -92,13 +93,13 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
       await ResourceNeedService.createResourceNeed({
         ...data,
         userId: user.uid,
-        location: location,
+        location: location, // This can be null, the service/type needs to allow it
         fulfilled: false,
         timestamp: serverTimestamp(),
       });
       toast({
         title: 'Request Submitted',
-        description: 'Your resource need has been posted to the community map.',
+        description: 'Your resource need has been posted.',
       });
       reset();
       onOpenChange(false);
@@ -116,13 +117,14 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
         if (!isOpen) {
             reset();
             setLocation(null);
+            setIsLocationLoading(false);
         }
     }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Request a Resource</DialogTitle>
           <DialogDescription>
-            Let the community know what you need. Your location will be shared.
+            Let the community know what you need. Your location will be shared if available.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -178,10 +180,10 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting || !location}>
+            <Button type="submit" disabled={isSubmitting || isLocationLoading}>
               {isSubmitting ? (
                 <><Loader2 className="mr-2 animate-spin" /> Submitting...</>
-              ) : !location ? (
+              ) : isLocationLoading ? (
                 <><Loader2 className="mr-2 animate-spin" /> Getting Location...</>
               ) : (
                 'Submit Request'

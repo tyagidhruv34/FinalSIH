@@ -28,7 +28,7 @@ export type UserStatus = {
     userName:string;
     userAvatarUrl?: string;
     status: 'safe' | 'help';
-    location: GeoPoint;
+    location?: GeoPoint;
     timestamp: Timestamp;
 };
 
@@ -38,7 +38,7 @@ export type ResourceNeed = {
     item: 'Food' | 'Water' | 'Medicine' | 'Shelter';
     quantity: number;
     urgency: 'Low' | 'Medium' | 'High';
-    location: GeoPoint;
+    location: GeoPoint | null;
     contactInfo: string;
     fulfilled: boolean;
     timestamp: any; // Using 'any' for serverTimestamp compatibility

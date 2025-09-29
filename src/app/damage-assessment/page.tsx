@@ -35,8 +35,8 @@ export default function DamageAssessmentPage() {
   const [analysisResult, setAnalysisResult] = useState<AssessDamageOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -51,13 +51,16 @@ export default function DamageAssessmentPage() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
+        setLocationError(null);
       },
       (err) => {
+        const errorMessage = "Could not get your location. Analysis will proceed without location data.";
         console.warn(`ERROR(${err.code}): ${err.message}`);
+        setLocationError(errorMessage);
         toast({
             variant: "destructive",
             title: "Location Error",
-            description: "Could not get your location. Please enable location services. Analysis will proceed without location data.",
+            description: errorMessage,
         });
       }
     );
@@ -104,38 +107,33 @@ export default function DamageAssessmentPage() {
       });
       return;
     }
-    
-    if (!location) {
-        toast({
-            variant: "destructive",
-            title: "Location not available",
-            description: "Cannot submit report without location. Please enable location services and refresh.",
-        });
-        return;
-    }
 
     setIsSubmitting(true);
     setAnalysisResult(null);
     setError(null);
 
     try {
+      const geoPoint = location ? new GeoPoint(location.latitude, location.longitude) : undefined;
+      
       const result = await assessDamage({
         photoDataUri: imagePreview,
         description: description,
-        location: location ? new GeoPoint(location.latitude, location.longitude) : undefined,
+        location: geoPoint,
       });
       
       setAnalysisResult(result);
 
-      // Save report to Firestore
-      await DamageReportService.createDamageReport({
-          userId: user!.uid,
-          description,
-          imageUrl: imagePreview, // In a real app, upload to storage and save URL
-          location: new GeoPoint(location.latitude, location.longitude),
-          assessment: result,
-          timestamp: serverTimestamp(),
-      });
+      if (geoPoint) {
+         // Save report to Firestore only if location is available
+        await DamageReportService.createDamageReport({
+            userId: user!.uid,
+            description,
+            imageUrl: imagePreview, // In a real app, upload to storage and save URL
+            location: geoPoint,
+            assessment: result,
+            timestamp: serverTimestamp(),
+        });
+      }
 
 
       toast({
@@ -180,7 +178,10 @@ export default function DamageAssessmentPage() {
             <div className="space-y-2">
               <Label htmlFor="damage-image">Damage Image</Label>
               <Input id="damage-image" type="file" accept="image/png, image/jpeg" onChange={handleFileChange} ref={fileInputRef} className="file:text-primary file:font-semibold"/>
-               <p className="text-xs text-muted-foreground pt-1">Max file size: 4MB. Your current location will be attached to the report.</p>
+               <p className="text-xs text-muted-foreground pt-1">
+                {location ? "Your current location will be attached to the report." : "Attempting to get your location..."}
+                {locationError && <span className="text-destructive"> {locationError}</span>}
+               </p>
             </div>
 
             {imagePreview && (

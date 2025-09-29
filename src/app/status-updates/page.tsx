@@ -33,42 +33,48 @@ export default function StatusUpdatesPage() {
 
   const handleStatusUpdate = (status: 'safe' | 'help') => {
     setIsSubmitting(status);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
+    
+    const submitStatus = async (location?: GeoPoint) => {
         try {
-          const { latitude, longitude } = position.coords;
-          await updateUserStatus({
-            userId: user.uid,
-            userName: user.displayName || 'Anonymous',
-            userAvatarUrl: user.photoURL || undefined,
-            status,
-            location: new GeoPoint(latitude, longitude),
-            timestamp: serverTimestamp(),
-          });
-          toast({
-            title: "Status Updated",
-            description: `You've been marked as ${status === 'safe' ? 'safe' : 'needing help'}. Your location has been shared.`,
-          });
-           router.push('/resource-locator');
+            await updateUserStatus({
+                userId: user.uid,
+                userName: user.displayName || 'Anonymous',
+                userAvatarUrl: user.photoURL || undefined,
+                status,
+                location,
+                timestamp: serverTimestamp(),
+            });
+            toast({
+                title: "Status Updated",
+                description: `You've been marked as ${status === 'safe' ? 'safe' : 'needing help'}. ${location ? 'Your location has been shared.' : ''}`,
+            });
+            router.push('/resource-locator');
         } catch (error) {
-          console.error("Error updating status: ", error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not update your status. Please try again.",
-          });
+            console.error("Error updating status: ", error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not update your status. Please try again.",
+            });
         } finally {
-          setIsSubmitting(null);
+            setIsSubmitting(null);
         }
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        submitStatus(new GeoPoint(latitude, longitude));
       },
       (error) => {
         console.error("Error getting location: ", error);
         toast({
           variant: "destructive",
           title: "Location Error",
-          description: "Could not get your location. Please enable location services in your browser.",
+          description: "Could not get your location. Submitting status without location data.",
         });
-        setIsSubmitting(null);
+        // Proceed without location
+        submitStatus(undefined);
       }
     );
   };
@@ -86,7 +92,7 @@ export default function StatusUpdatesPage() {
           <CardHeader>
             <CardTitle>Are you safe?</CardTitle>
             <CardDescription>
-              Press one of the buttons below. Your location will be recorded to help rescuers and coordinators.
+              Press one of the buttons below. Your location will be recorded to help rescuers and coordinators if available.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,7 +126,7 @@ export default function StatusUpdatesPage() {
             <CardHeader>
                 <CardTitle>Privacy Note</CardTitle>
                 <CardDescription>
-                    Your location will only be shared on the community map for disaster response purposes. Your status will be visible to other users of this app.
+                    If available, your location will be shared on the community map for disaster response purposes. Your status will be visible to other users of this app.
                 </CardDescription>
             </CardHeader>
         </Card>

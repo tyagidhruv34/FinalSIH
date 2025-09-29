@@ -26,6 +26,8 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
 };
 
 const ResourceNeedMarker = ({ need }: { need: ResourceNeed }) => {
+  if (!need.location) return null;
+
   const markerPosition = { lat: need.location.latitude, lng: need.location.longitude };
   const isHighUrgency = need.urgency === 'High';
 
@@ -101,6 +103,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
 
            {/* User Status Markers */}
             {userStatuses.map((status) => {
+              if (!status.location) return null;
               const markerPosition = { lat: status.location.latitude, lng: status.location.longitude };
               const isSafe = status.status === 'safe';
 
