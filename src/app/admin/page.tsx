@@ -35,7 +35,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { format } from 'date-fns';
 import { Trash2, ShieldAlert, BarChart3, Building2 } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase/firebase';
 
 
 const alertFormSchema = z.object({
@@ -71,37 +72,46 @@ export default function AdminAlertPage() {
   const selectedAreas = watch('affectedAreas');
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-      setIsLoading(true);
-      try {
-        const [fetchedAlerts, fetchedReports] = await Promise.all([
-          AlertService.getAlerts(),
-          DamageReportService.getDamageReports()
-        ]);
-        setAlerts(fetchedAlerts);
-        setDamageReports(fetchedReports);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch dashboard data.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (!loading) {
-        fetchData();
+    if (loading) return;
+    if (!user) {
+        router.push('/login');
+        return;
     }
-  }, [user, loading, toast]);
 
-  if (loading) {
+    setIsLoading(true);
+
+    const alertsQuery = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'));
+    const unsubscribeAlerts = onSnapshot(alertsQuery, (snapshot) => {
+        const fetchedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert));
+        setAlerts(fetchedAlerts);
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching alerts: ", error);
+        toast({ title: "Error", description: "Failed to fetch alerts.", variant: "destructive" });
+        setIsLoading(false);
+    });
+
+    const reportsQuery = query(collection(db, 'damage_reports'), orderBy('timestamp', 'desc'));
+    const unsubscribeReports = onSnapshot(reportsQuery, (snapshot) => {
+        const fetchedReports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DamageReport));
+        setDamageReports(fetchedReports);
+    }, (error) => {
+        console.error("Error fetching damage reports: ", error);
+        toast({ title: "Error", description: "Failed to fetch damage reports.", variant: "destructive" });
+    });
+
+    return () => {
+        unsubscribeAlerts();
+        unsubscribeReports();
+    };
+
+  }, [user, loading, router, toast]);
+
+  if (loading || isLoading) {
     return <p>Loading...</p>;
   }
 
   if (!user) {
-    router.push('/login');
     return null;
   }
   
@@ -112,16 +122,8 @@ export default function AdminAlertPage() {
             ...data,
             createdBy: user.uid,
         };
-        const newAlertId = await AlertService.createAlert(newAlertData);
+        await AlertService.createAlert(newAlertData);
         
-        // Optimistically update UI
-        const optimisticAlert: Alert = {
-          ...newAlertData,
-          id: newAlertId,
-          timestamp: Timestamp.now() 
-        };
-        setAlerts(prevAlerts => [optimisticAlert, ...prevAlerts]);
-
         toast({
             title: "Success!",
             description: "Alert has been created and sent successfully.",
@@ -141,9 +143,6 @@ export default function AdminAlertPage() {
   const handleDeleteAlert = async (alertId: string) => {
     if (!window.confirm("Are you sure you want to delete this alert?")) return;
 
-    const originalAlerts = alerts;
-    setAlerts(alerts.filter(a => a.id !== alertId)); // Optimistic delete
-
     try {
       await AlertService.deleteAlert(alertId);
       toast({
@@ -151,7 +150,6 @@ export default function AdminAlertPage() {
         description: "The alert has been successfully deleted.",
       });
     } catch (error) {
-      setAlerts(originalAlerts); // Revert on failure
       toast({
         title: "Error",
         description: "Failed to delete the alert.",
@@ -356,7 +354,7 @@ export default function AdminAlertPage() {
                                     <TableRow key={alert.id}>
                                         <TableCell className="font-medium">{alert.title}</TableCell>
                                         <TableCell><Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'}>{alert.severity}</Badge></TableCell>
-                                        <TableCell>{format(alert.timestamp.toDate(), 'PPP p')}</TableCell>
+                                        <TableCell>{alert.timestamp ? format(alert.timestamp.toDate(), 'PPP p') : 'Just now'}</TableCell>
                                         <TableCell className="text-right">
                                           <Button variant="ghost" size="icon" onClick={() => handleDeleteAlert(alert.id)}>
                                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -396,7 +394,7 @@ export default function AdminAlertPage() {
                             axisLine={false}
                             allowDecimals={false}
                           />
-                          <Bar dataKey="total" fill="#ea580c" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     )}

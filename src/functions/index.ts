@@ -29,7 +29,7 @@ const TARGET_LANGUAGES = [
 
 // This Cloud Function triggers when a new alert is created.
 // It translates the alert content into multiple languages and stores them in a subcollection.
-// It also contains placeholder logic for sending language-specific push notifications.
+// It also contains logic for sending language-specific push notifications for admin-created alerts.
 export const translateAndNotify = onDocumentCreated("alerts/{alertId}", async (event) => {
   const snapshot = event.data;
   if (!snapshot) {
@@ -39,32 +39,36 @@ export const translateAndNotify = onDocumentCreated("alerts/{alertId}", async (e
 
   const alertId = event.params.alertId;
   const alertData = snapshot.data();
-  const { title, description, severity } = alertData;
+  const { title, description, severity, createdBy } = alertData;
 
-  // --- Send Push Notification ---
-  const topic = "all_users"; 
-  const message = {
-    notification: {
-      title: `🚨 ${severity || 'New'} Alert: ${title || 'Community help request'}`,
-      body: description || 'Check the app for more details.',
-    },
-    topic: topic,
-  };
+  // --- Send Push Notification for Admin-created alerts ---
+  // We check if the title and description exist. This is a proxy for "admin-created" vs "SOS".
+  if(title && description) {
+    const topic = "all_users"; 
+    const message = {
+      notification: {
+        title: `🚨 ${severity || 'New'} Alert: ${title}`,
+        body: description,
+      },
+      topic: topic,
+    };
 
-  try {
-    const response = await getMessaging().send(message);
-    logger.log("Successfully sent general notification:", response);
-  } catch (error) {
-    logger.error("Error sending general notification:", error);
+    try {
+      const response = await getMessaging().send(message);
+      logger.log("Successfully sent general notification:", response);
+    } catch (error) {
+      logger.error("Error sending general notification:", error);
+    }
   }
+
 
   // --- Translate Alert (if applicable) ---
   if (!title || !description) {
-    logger.log(`Alert ${alertId} has no title or description. Skipping translation.`);
+    logger.log(`Alert ${alertId} is an automated SOS or has no title/description. Skipping translation.`);
     return;
   }
 
-  logger.log(`New alert created with ID: ${alertId}. Starting translation.`);
+  logger.log(`New admin alert created with ID: ${alertId}. Starting translation.`);
 
   const translations: { [key: string]: { title: string; description: string } } = {};
 
@@ -120,3 +124,5 @@ export const translateAndNotify = onDocumentCreated("alerts/{alertId}", async (e
   await Promise.all(translationStoragePromises);
   logger.log(`All translations stored for alert ${alertId}.`);
 });
+
+    

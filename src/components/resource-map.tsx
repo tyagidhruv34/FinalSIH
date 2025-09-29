@@ -75,6 +75,7 @@ const getResourceMarkerIcon = (resource: Resource) => {
 export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [] }: ResourceMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
 
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) { // Only initialize map once
@@ -84,6 +85,8 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+
+        markersRef.current.addTo(map);
     }
     
     // Cleanup function to run when component unmounts
@@ -96,20 +99,16 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
   }, []); // Empty dependency array ensures this runs only once on mount and cleanup on unmount
 
   useEffect(() => {
-      const map = mapRef.current;
-      if (!map) return;
+      const markers = markersRef.current;
+      if (!markers) return;
 
       // Clear existing markers before adding new ones
-      map.eachLayer((layer) => {
-          if (layer instanceof L.Marker) {
-              map.removeLayer(layer);
-          }
-      });
+      markers.clearLayers();
       
       // Add new markers
       resources.forEach((resource) => {
           L.marker([resource.position.lat, resource.position.lng], { icon: getResourceMarkerIcon(resource) })
-              .addTo(map)
+              .addTo(markers)
               .bindPopup(`<p class="font-bold">${resource.name}</p><p>${resource.address}</p>`);
       });
 
@@ -117,7 +116,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
           if (!status.location) return;
           const isSafe = status.status === 'safe';
           L.marker([status.location.latitude, status.location.longitude], { icon: isSafe ? userSafeIcon : userHelpIcon })
-              .addTo(map)
+              .addTo(markers)
               .bindPopup(`<p class="font-bold">${status.userName}</p><p>Status: <span class="${isSafe ? 'text-green-600' : 'text-red-600'}">${status.status}</span></p>`);
       });
 
@@ -125,7 +124,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
           if (!need.location) return;
           const isHighUrgency = need.urgency === 'High';
           L.marker([need.location.latitude, need.location.longitude], { icon: isHighUrgency ? needHighUrgencyIcon : needLowUrgencyIcon })
-              .addTo(map)
+              .addTo(markers)
               .bindPopup(`<p class="font-bold">${need.quantity}x ${need.item}</p><p>Urgency: ${need.urgency}</p><p>Contact: ${need.contactInfo}</p>`);
       });
 
@@ -136,3 +135,5 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
     <div id="map" ref={mapContainerRef} className="h-[500px] w-full rounded-lg overflow-hidden border" />
   );
 }
+
+    
