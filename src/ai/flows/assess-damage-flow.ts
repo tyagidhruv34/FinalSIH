@@ -10,7 +10,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { GeoPoint } from 'firebase/firestore';
 
 const AssessDamageInputSchema = z.object({
   photoDataUri: z
@@ -19,7 +18,10 @@ const AssessDamageInputSchema = z.object({
       "A photo of potential structural damage, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   description: z.string().optional().describe('An optional user-provided description of the damage.'),
-  location: z.custom<GeoPoint>().optional().describe('The geographical location where the photo was taken.'),
+  location: z.object({
+    latitude: z.number(),
+    longitude: z.number(),
+  }).optional().describe('The geographical location where the photo was taken.'),
 });
 export type AssessDamageInput = z.infer<typeof AssessDamageInputSchema>;
 

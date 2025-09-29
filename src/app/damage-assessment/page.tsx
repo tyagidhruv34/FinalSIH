@@ -113,17 +113,17 @@ export default function DamageAssessmentPage() {
     setError(null);
 
     try {
-      const geoPoint = location ? new GeoPoint(location.latitude, location.longitude) : undefined;
       
       const result = await assessDamage({
         photoDataUri: imagePreview,
         description: description,
-        location: geoPoint,
+        location: location || undefined,
       });
       
       setAnalysisResult(result);
 
-      if (geoPoint) {
+      if (location) {
+         const geoPoint = new GeoPoint(location.latitude, location.longitude);
          // Save report to Firestore only if location is available
         await DamageReportService.createDamageReport({
             userId: user!.uid,
