@@ -9,6 +9,28 @@ import { Label } from "@/components/ui/label";
 import { GraduationCap, Film, Gamepad2, Check, X, Box, Droplets, Utensils, BriefcaseMedical, Flashlight, Radio } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+// To change a video, simply update the 'src' URL in the list below.
+// Make sure the URL is the "embed" version from YouTube.
+const educationalVideos = [
+  {
+    title: "Earthquake Safety",
+    src: "https://www.youtube.com/embed/Gsd-44Mv_iE",
+  },
+  {
+    title: "Build an Emergency Kit",
+    src: "https://www.youtube.com/embed/y-z4q3-4_vE",
+  },
+  {
+    title: "Flood Safety",
+    src: "https://www.youtube.com/embed/OpNps_3-A6A",
+  },
+  {
+    title: "Fire Safety",
+    src: "https://www.youtube.com/embed/74h4b1-gW3A",
+  }
+];
+
+
 // Quiz data
 const quizQuestions = [
   {
@@ -115,54 +137,20 @@ export default function LearningHubPage() {
           <CardDescription>Watch these videos to learn about disaster preparedness.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-          <div className="space-y-2">
-            <h3 className="font-semibold">Earthquake Safety</h3>
-            <div className="aspect-video">
-              <iframe
-                className="w-full h-full rounded-lg"
-                src="https://www.youtube.com/embed/Gsd-44Mv_iE"
-                title="Earthquake Safety Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
+          {educationalVideos.map((video) => (
+            <div key={video.title} className="space-y-2">
+              <h3 className="font-semibold">{video.title}</h3>
+              <div className="aspect-video">
+                <iframe
+                  className="w-full h-full rounded-lg"
+                  src={video.src}
+                  title={`${video.title} Video`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
             </div>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-semibold">Build an Emergency Kit</h3>
-            <div className="aspect-video">
-              <iframe
-                className="w-full h-full rounded-lg"
-                src="https://www.youtube.com/embed/y-z4q3-4_vE"
-                title="Emergency Kit Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-           <div className="space-y-2">
-            <h3 className="font-semibold">Flood Safety</h3>
-            <div className="aspect-video">
-              <iframe
-                className="w-full h-full rounded-lg"
-                src="https://www.youtube.com/embed/OpNps_3-A6A"
-                title="Flood Safety Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-           <div className="space-y-2">
-            <h3 className="font-semibold">Fire Safety</h3>
-            <div className="aspect-video">
-              <iframe
-                className="w-full h-full rounded-lg"
-                src="https://www.youtube.com/embed/74h4b1-gW3A"
-                title="Fire Safety Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
+          ))}
         </CardContent>
       </Card>
       
@@ -245,5 +233,3 @@ export default function LearningHubPage() {
     </div>
   );
 }
-
-    
