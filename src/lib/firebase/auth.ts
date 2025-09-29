@@ -48,12 +48,8 @@ export const createUserProfileDocument = async (user: User) => {
 
 
 export const signInWithGoogle = async () => {
-  try {
     const result = await signInWithPopup(auth, googleProvider);
     await createUserProfileDocument(result.user);
-  } catch (error) {
-    console.error('Error signing in with Google', error);
-  }
 };
 
 export const signInWithPhone = async (phoneNumber: string, verifier: RecaptchaVerifier): Promise<ConfirmationResult> => {
