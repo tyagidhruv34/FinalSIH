@@ -25,7 +25,7 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const isPhoneAuthDisabled = true; // Phone auth is temporarily disabled to provide a stable login experience
+  const isPhoneAuthDisabled = false; // Phone auth is re-enabled
 
   useEffect(() => {
     if (isPhoneAuthDisabled || window.recaptchaVerifier) return;
