@@ -25,7 +25,7 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const isPhoneAuthDisabled = false; // Phone auth is re-enabled
+  const isPhoneAuthDisabled = true; // Phone auth is disabled due to billing error
 
   useEffect(() => {
     if (isPhoneAuthDisabled || window.recaptchaVerifier) return;
@@ -135,7 +135,7 @@ export default function AuthForm() {
 
       {isPhoneAuthDisabled ? (
         <div className="text-center text-sm text-muted-foreground">
-          <p>Phone sign-in is temporarily unavailable. Please use Google Sign-In for a stable experience.</p>
+          <p>To enable phone sign-in, please add a billing account to your Firebase project in the Firebase console.</p>
         </div>
       ) : !confirmationResult ? (
         <form onSubmit={handlePhoneSignIn} className="space-y-4">
