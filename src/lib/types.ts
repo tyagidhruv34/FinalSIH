@@ -25,7 +25,7 @@ export type StatusUpdate = {
 export type UserStatus = {
     id: string;
     userId: string;
-    userName:string;
+    userName: string;
     userAvatarUrl?: string;
     status: 'safe' | 'help';
     location?: GeoPoint;
