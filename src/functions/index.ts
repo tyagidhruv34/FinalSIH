@@ -39,7 +39,30 @@ export const translateAndNotify = onDocumentCreated("alerts/{alertId}", async (e
 
   const alertId = event.params.alertId;
   const alertData = snapshot.data();
-  const { title, description } = alertData;
+  const { title, description, severity } = alertData;
+
+  // --- Send Push Notification ---
+  const topic = "all_users"; 
+  const message = {
+    notification: {
+      title: `🚨 ${severity || 'New'} Alert: ${title || 'Community help request'}`,
+      body: description || 'Check the app for more details.',
+    },
+    topic: topic,
+  };
+
+  try {
+    const response = await getMessaging().send(message);
+    logger.log("Successfully sent general notification:", response);
+  } catch (error) {
+    logger.error("Error sending general notification:", error);
+  }
+
+  // --- Translate Alert (if applicable) ---
+  if (!title || !description) {
+    logger.log(`Alert ${alertId} has no title or description. Skipping translation.`);
+    return;
+  }
 
   logger.log(`New alert created with ID: ${alertId}. Starting translation.`);
 
@@ -96,27 +119,4 @@ export const translateAndNotify = onDocumentCreated("alerts/{alertId}", async (e
 
   await Promise.all(translationStoragePromises);
   logger.log(`All translations stored for alert ${alertId}.`);
-
-  // --- Placeholder for Language-Specific Push Notifications ---
-  // A real implementation would:
-  // 1. Query your 'users' collection to find users in the 'affectedAreas'.
-  // 2. For each user, get their preferred language and FCM token.
-  // 3. Send a notification using the appropriate translation from the subcollection.
-  
-  // Example: Send a general notification in English for now.
-  const topic = "all_users"; 
-  const message = {
-    notification: {
-      title: `🚨 ${alertData.severity} Alert: ${title}`,
-      body: description,
-    },
-    topic: topic,
-  };
-
-  try {
-    const response = await messaging.send(message);
-    logger.log("Successfully sent general notification:", response);
-  } catch (error) {
-    logger.error("Error sending general notification:", error);
-  }
 });
