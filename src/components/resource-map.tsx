@@ -1,13 +1,23 @@
 
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import type { Resource, UserStatus, ResourceNeed } from "@/lib/types";
-import { Card } from "@/components/ui/card";
-import * as icons from "lucide-react";
-import { UserCheck, AlertTriangle, PackageOpen, MapPinOff } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, MapContainerProps } from "react-leaflet";
+import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { useEffect, useRef, useState } from 'react';
+import type { Resource, UserStatus, ResourceNeed } from "@/lib/types";
+import * as icons from "lucide-react";
+import { UserCheck, AlertTriangle, PackageOpen } from "lucide-react";
 import ReactDOMServer from 'react-dom/server';
+
+// This is a workaround for a known issue with react-leaflet and Next.js
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png').default,
+  iconUrl: require('leaflet/dist/images/marker-icon.png').default,
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png').default,
+});
+
 
 type ResourceMapProps = {
   resources: Resource[];
@@ -32,12 +42,6 @@ const createMarkerIcon = (icon: React.ReactElement) => {
         popupAnchor: [0, -32],
     });
 };
-
-const resourceIcon = createMarkerIcon(
-    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer shadow-md">
-        <icons.Home className="h-5 w-5 text-primary-foreground" />
-    </div>
-);
 
 const userSafeIcon = createMarkerIcon(
     <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center cursor-pointer shadow-md">
@@ -71,10 +75,23 @@ const getResourceMarkerIcon = (resource: Resource) => {
 
 export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [] }: ResourceMapProps) {
   const position: [number, number] = [28.6139, 77.2090]; // Delhi, India
+  const mapRef = useRef<L.Map | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <div className="h-[500px] w-full rounded-lg overflow-hidden border">
-        <MapContainer center={position} zoom={11} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
+      {isClient && (
+        <MapContainer
+            center={position}
+            zoom={11}
+            scrollWheelZoom={true}
+            style={{ height: '100%', width: '100%' }}
+            whenCreated={map => mapRef.current = map}
+        >
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -123,6 +140,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
                 )
             })}
         </MapContainer>
+      )}
     </div>
   );
 }
