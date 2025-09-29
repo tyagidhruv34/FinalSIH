@@ -17,15 +17,15 @@ const educationalVideos = [
   },
   {
     title: "Build an Emergency Kit",
-    src: "https://www.youtube.com/embed/eSg2gmX50A8",
+    src: "https://www.youtube.com/embed/KKN7Ewht1DQ",
   },
   {
     title: "Flood Safety",
-    src: "https://www.youtube.com/embed/OpNps_3-A6A",
+    src: "https://www.youtube.com/embed/pi_nUPcQz_A",
   },
   {
     title: "Fire Safety",
-    src: "https://www.youtube.com/embed/74h4b1-gW3A",
+    src: "https://www.youtube.com/embed/Xgc90CoJbDI",
   }
 ];
 
