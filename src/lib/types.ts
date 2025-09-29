@@ -1,6 +1,7 @@
+
 import type { LucideIcon } from "lucide-react";
-import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier, Timestamp } from 'firebase/auth';
-import type { GeoPoint } from "firebase/firestore";
+import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
+import type { GeoPoint, Timestamp } from "firebase/firestore";
 import type { AssessDamageOutput } from "@/ai/flows/assess-damage-flow";
 
 export type Alert = {

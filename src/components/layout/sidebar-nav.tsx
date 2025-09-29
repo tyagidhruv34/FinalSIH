@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
+  { href: "/rescue", label: "Rescue Dashboard", icon: "LifeBuoy" },
   { href: "/learning-hub", label: "Learning Hub", icon: "GraduationCap" },
   { href: "/damage-assessment", label: "Damage Assessment", icon: "Bot" },
   { href: "/risk-assessment", label: "Risk Assessment", icon: "ShieldAlert" },

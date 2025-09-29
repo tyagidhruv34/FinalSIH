@@ -4,9 +4,9 @@
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect, useRef } from 'react';
-import type { Resource, UserStatus, ResourceNeed } from "@/lib/types";
+import type { Resource, UserStatus, ResourceNeed, DamageReport } from "@/lib/types";
 import * as icons from "lucide-react";
-import { UserCheck, AlertTriangle, PackageOpen } from "lucide-react";
+import { UserCheck, AlertTriangle, PackageOpen, Building2 } from "lucide-react";
 import ReactDOMServer from 'react-dom/server';
 
 // This is a workaround for a known issue with react-leaflet and Next.js
@@ -22,6 +22,9 @@ type ResourceMapProps = {
   resources: Resource[];
   userStatuses: UserStatus[];
   resourceNeeds: ResourceNeed[];
+  damageReports?: DamageReport[];
+  center?: [number, number];
+  zoom?: number;
 };
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
@@ -64,6 +67,12 @@ const needHighUrgencyIcon = createMarkerIcon(
     </div>
 );
 
+const damageReportIcon = createMarkerIcon(
+    <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center cursor-pointer shadow-md">
+        <Building2 className="h-5 w-5 text-white" />
+    </div>
+);
+
 const getResourceMarkerIcon = (resource: Resource) => {
     return createMarkerIcon(
         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer shadow-md">
@@ -72,14 +81,14 @@ const getResourceMarkerIcon = (resource: Resource) => {
     );
 };
 
-export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [] }: ResourceMapProps) {
+export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [], damageReports = [], center = [28.6139, 77.2090], zoom = 11 }: ResourceMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
 
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) { // Only initialize map once
-        const map = L.map(mapContainerRef.current).setView([28.6139, 77.2090], 11);
+        const map = L.map(mapContainerRef.current).setView(center, zoom);
         mapRef.current = map;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -97,6 +106,12 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
         }
     };
   }, []); // Empty dependency array ensures this runs only once on mount and cleanup on unmount
+
+  useEffect(() => {
+    if(mapRef.current) {
+        mapRef.current.setView(center, zoom);
+    }
+  }, [center, zoom])
 
   useEffect(() => {
       const markers = markersRef.current;
@@ -128,12 +143,17 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
               .bindPopup(`<p class="font-bold">${need.quantity}x ${need.item}</p><p>Urgency: ${need.urgency}</p><p>Contact: ${need.contactInfo}</p>`);
       });
 
-  }, [resources, userStatuses, resourceNeeds]);
+      damageReports.forEach((report) => {
+        if (!report.location) return;
+        L.marker([report.location.latitude, report.location.longitude], { icon: damageReportIcon })
+            .addTo(markers)
+            .bindPopup(`<p class="font-bold">Damage Report</p><p>Severity: ${report.assessment.severity}</p><p>${report.description}</p>`);
+      });
+
+  }, [resources, userStatuses, resourceNeeds, damageReports]);
 
 
   return (
     <div id="map" ref={mapContainerRef} className="h-[500px] w-full rounded-lg overflow-hidden border" />
   );
 }
-
-    
