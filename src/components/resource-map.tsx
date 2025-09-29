@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -8,7 +9,7 @@ import {
 import type { Resource, UserStatus, ResourceNeed } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import * as icons from "lucide-react";
-import { UserCheck, AlertTriangle, PackageOpen } from "lucide-react";
+import { UserCheck, AlertTriangle, PackageOpen, MapPinOff } from "lucide-react";
 
 type ResourceMapProps = {
   resources: Resource[];
@@ -56,13 +57,13 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
     return (
       <Card className="h-[500px] w-full flex items-center justify-center bg-muted/50 rounded-lg border-dashed border-2">
         <div className="text-center text-muted-foreground p-4">
-          <h3 className="text-lg font-semibold text-foreground">Map Unavailable</h3>
+          <MapPinOff className="h-12 w-12 mx-auto text-muted-foreground" />
+          <h3 className="text-lg font-semibold text-foreground mt-4">Map Unavailable</h3>
           <p className="mt-2 text-sm">
-            Google Maps API Key is not configured.
+            The Google Maps API Key is missing. The map cannot be displayed.
           </p>
-          <p className="text-xs">
-            Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment
-            variables.
+          <p className="text-xs mt-4 bg-background p-2 rounded-md border">
+            To fix this, add <code className="font-mono bg-primary/10 text-primary px-1 py-0.5 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE</code> to your local `.env` file. You must also enable billing for your project in the Google Cloud Console.
           </p>
         </div>
       </Card>
