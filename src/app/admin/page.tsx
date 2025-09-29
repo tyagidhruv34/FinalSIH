@@ -35,6 +35,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { format } from 'date-fns';
 import { Trash2, ShieldAlert, BarChart3, Building2 } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { Timestamp } from 'firebase/firestore';
 
 
 const alertFormSchema = z.object({
@@ -69,31 +70,31 @@ export default function AdminAlertPage() {
   
   const selectedAreas = watch('affectedAreas');
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [fetchedAlerts, fetchedReports] = await Promise.all([
-        AlertService.getAlerts(),
-        DamageReportService.getDamageReports()
-      ]);
-      setAlerts(fetchedAlerts);
-      setDamageReports(fetchedReports);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch dashboard data.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (user) {
-      fetchData();
+    const fetchData = async () => {
+      if (!user) return;
+      setIsLoading(true);
+      try {
+        const [fetchedAlerts, fetchedReports] = await Promise.all([
+          AlertService.getAlerts(),
+          DamageReportService.getDamageReports()
+        ]);
+        setAlerts(fetchedAlerts);
+        setDamageReports(fetchedReports);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch dashboard data.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (!loading) {
+        fetchData();
     }
-  }, [user]);
+  }, [user, loading, toast]);
 
   if (loading) {
     return <p>Loading...</p>;
@@ -107,17 +108,25 @@ export default function AdminAlertPage() {
   const onSubmit = async (data: AlertFormValues) => {
     setIsSubmitting(true);
     try {
-        const alertData: Omit<Alert, 'id' | 'timestamp'> = {
+        const newAlertData: Omit<Alert, 'id' | 'timestamp'> = {
             ...data,
             createdBy: user.uid,
         };
-        await AlertService.createAlert(alertData);
+        const newAlertId = await AlertService.createAlert(newAlertData);
+        
+        // Optimistically update UI
+        const optimisticAlert: Alert = {
+          ...newAlertData,
+          id: newAlertId,
+          timestamp: Timestamp.now() 
+        };
+        setAlerts(prevAlerts => [optimisticAlert, ...prevAlerts]);
+
         toast({
             title: "Success!",
             description: "Alert has been created and sent successfully.",
         });
-        reset();
-        fetchData(); // Refresh all data
+        reset(); // Clear the form
     } catch (error) {
         toast({
             title: "Error",
@@ -132,14 +141,17 @@ export default function AdminAlertPage() {
   const handleDeleteAlert = async (alertId: string) => {
     if (!window.confirm("Are you sure you want to delete this alert?")) return;
 
+    const originalAlerts = alerts;
+    setAlerts(alerts.filter(a => a.id !== alertId)); // Optimistic delete
+
     try {
       await AlertService.deleteAlert(alertId);
       toast({
         title: "Alert Deleted",
         description: "The alert has been successfully deleted.",
       });
-      fetchData(); // Refresh all data
     } catch (error) {
+      setAlerts(originalAlerts); // Revert on failure
       toast({
         title: "Error",
         description: "Failed to delete the alert.",
@@ -395,7 +407,5 @@ export default function AdminAlertPage() {
     </div>
   );
 }
-
-    
 
     
