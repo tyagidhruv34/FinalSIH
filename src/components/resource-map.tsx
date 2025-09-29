@@ -5,14 +5,15 @@ import {
   Map,
   AdvancedMarker,
 } from "@vis.gl/react-google-maps";
-import type { Resource, UserStatus } from "@/lib/types";
+import type { Resource, UserStatus, ResourceNeed } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import * as icons from "lucide-react";
-import { UserCheck, AlertTriangle } from "lucide-react";
+import { UserCheck, AlertTriangle, PackageOpen } from "lucide-react";
 
 type ResourceMapProps = {
   resources: Resource[];
   userStatuses: UserStatus[];
+  resourceNeeds: ResourceNeed[];
 };
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
@@ -23,8 +24,31 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
   return <Icon {...props} />;
 };
 
+const ResourceNeedMarker = ({ need }: { need: ResourceNeed }) => {
+  const markerPosition = { lat: need.location.latitude, lng: need.location.longitude };
+  const isHighUrgency = need.urgency === 'High';
 
-export default function ResourceMap({ resources, userStatuses = [] }: ResourceMapProps) {
+  return (
+    <AdvancedMarker
+      position={markerPosition}
+      title={`${need.quantity}x ${need.item} (Urgency: ${need.urgency})`}
+    >
+      <div className="group">
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform group-hover:scale-110 shadow-md ${isHighUrgency ? 'bg-orange-500' : 'bg-blue-500'}`}>
+            <PackageOpen className="h-5 w-5 text-white" />
+        </div>
+        <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          <p className="font-bold">{need.quantity}x {need.item}</p>
+          <p>Urgency: <span className={isHighUrgency ? 'text-orange-600' : 'text-blue-600'}>{need.urgency}</span></p>
+          <p>Contact: {need.contactInfo}</p>
+        </div>
+      </div>
+    </AdvancedMarker>
+  )
+}
+
+
+export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [] }: ResourceMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const position = { lat: 28.6139, lng: 77.2090 }; // Delhi, India
 
@@ -101,6 +125,12 @@ export default function ResourceMap({ resources, userStatuses = [] }: ResourceMa
                 </AdvancedMarker>
               )
             })}
+
+            {/* Resource Need Markers */}
+            {resourceNeeds.map((need) => (
+              <ResourceNeedMarker key={`need-${need.id}`} need={need} />
+            ))}
+
         </Map>
       </APIProvider>
     </div>
