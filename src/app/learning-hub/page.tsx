@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -14,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 const educationalVideos = [
   {
     title: "Earthquake Safety",
-    src: "https://www.youtube.com/embed/Gsd-44Mv_iE",
+    src: "https://www.youtube.com/embed/MllUVQM3KVk",
   },
   {
     title: "Build an Emergency Kit",
