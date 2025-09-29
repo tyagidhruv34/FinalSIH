@@ -41,7 +41,7 @@ const ResourceNeedMarker = ({ need }: { need: ResourceNeed }) => {
             <PackageOpen className="h-5 w-5 text-white" />
         </div>
         <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          <p className="font-bold">{need.quantity}x {need.item}</p>
+          <p className="font-bold">{need.quantity}x ${need.item}</p>
           <p>Urgency: <span className={isHighUrgency ? 'text-orange-600' : 'text-blue-600'}>{need.urgency}</span></p>
           <p>Contact: {need.contactInfo}</p>
         </div>
@@ -60,13 +60,14 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
       <Card className="h-[500px] w-full flex items-center justify-center bg-muted/50 rounded-lg border-dashed border-2">
         <div className="text-center text-muted-foreground p-4">
           <MapPinOff className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h3 className="text-lg font-semibold text-foreground mt-4">Map Unavailable</h3>
+          <h3 className="text-lg font-semibold text-foreground mt-4">Map Configuration Needed</h3>
           <p className="mt-2 text-sm">
-            The Google Maps API Key is missing. The map cannot be displayed.
+            To enable the map, you need to add a Google Maps API Key and enable billing on your Google Cloud project.
           </p>
-          <p className="text-xs mt-4 bg-background p-2 rounded-md border">
-            To fix this, add <code className="font-mono bg-primary/10 text-primary px-1 py-0.5 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE</code> to your local `.env` file. You must also enable billing for your project in the Google Cloud Console.
-          </p>
+          <div className="text-xs mt-4 bg-background p-2 rounded-md border text-left space-y-2">
+             <p><strong>Step 1: API Key</strong><br/>Add your key to the <code className="font-mono bg-primary/10 text-primary px-1 py-0.5 rounded">.env</code> file: <br /><code className="font-mono text-primary">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE</code></p>
+             <p><strong>Step 2: Enable Billing</strong><br/>The <code className="font-mono text-primary">BillingNotEnabledMapError</code> means you must link a billing account in the Google Cloud Console. See the <a href="https://developers.google.com/maps/documentation/javascript/error-messages#billing-not-enabled-map-error" target="_blank" rel="noopener noreferrer" className="underline">Google Maps documentation</a> for instructions.</p>
+          </div>
         </div>
       </Card>
     );
