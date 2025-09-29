@@ -17,7 +17,7 @@ const educationalVideos = [
   },
   {
     title: "Build an Emergency Kit",
-    src: "https://www.youtube.com/embed/y-z4q3-4_vE",
+    src: "https://www.youtube.com/embed/eSg2gmX50A8",
   },
   {
     title: "Flood Safety",
