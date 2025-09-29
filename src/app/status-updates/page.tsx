@@ -11,16 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from '@/hooks/use-toast';
-import { updateUserStatus } from '@/lib/firebase/status';
-import { GeoPoint, serverTimestamp } from 'firebase/firestore';
+import { useStatusUpdater } from '@/hooks/use-status-updater';
 import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function StatusUpdatesPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState<'safe' | 'help' | null>(null);
+  const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
+
 
   if (loading) {
     return <p>Loading...</p>;
@@ -30,54 +28,12 @@ export default function StatusUpdatesPage() {
     router.push('/login');
     return null;
   }
+  
+  const onStatusUpdate = async (status: 'safe' | 'help') => {
+      await handleStatusUpdate(status);
+      router.push('/resource-locator');
+  }
 
-  const handleStatusUpdate = (status: 'safe' | 'help') => {
-    setIsSubmitting(status);
-    
-    const submitStatus = async (location?: GeoPoint) => {
-        try {
-            await updateUserStatus({
-                userId: user.uid,
-                userName: user.displayName || 'Anonymous',
-                userAvatarUrl: user.photoURL || undefined,
-                status,
-                location,
-                timestamp: serverTimestamp(),
-            });
-            toast({
-                title: "Status Updated",
-                description: `You've been marked as ${status === 'safe' ? 'safe' : 'needing help'}. ${location ? 'Your location has been shared.' : ''}`,
-            });
-            router.push('/resource-locator');
-        } catch (error) {
-            console.error("Error updating status: ", error);
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Could not update your status. Please try again.",
-            });
-        } finally {
-            setIsSubmitting(null);
-        }
-    };
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        submitStatus(new GeoPoint(latitude, longitude));
-      },
-      (error) => {
-        console.error("Error getting location: ", error);
-        toast({
-          variant: "destructive",
-          title: "Location Error",
-          description: "Could not get your location. Submitting status without location data.",
-        });
-        // Proceed without location
-        submitStatus(undefined);
-      }
-    );
-  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -98,7 +54,7 @@ export default function StatusUpdatesPage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button
                 className="h-24 text-xl"
-                onClick={() => handleStatusUpdate('safe')}
+                onClick={() => onStatusUpdate('safe')}
                 disabled={!!isSubmitting}
               >
                  {isSubmitting === 'safe' ? (
@@ -110,7 +66,7 @@ export default function StatusUpdatesPage() {
               <Button
                 variant="destructive"
                 className="h-24 text-xl"
-                onClick={() => handleStatusUpdate('help')}
+                onClick={() => onStatusUpdate('help')}
                 disabled={!!isSubmitting}
               >
                 {isSubmitting === 'help' ? (

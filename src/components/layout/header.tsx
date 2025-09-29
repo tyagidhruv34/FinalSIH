@@ -22,6 +22,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useStatusUpdater } from "@/hooks/use-status-updater";
+import { Loader2 } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
@@ -71,10 +84,16 @@ export default function Header() {
   const pageTitle = pageTitles[pathname] || "Aapda Guide";
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
 
   const handleSignOut = async () => {
     await signOut();
     router.push('/login');
+  }
+  
+  const handleSos = async () => {
+    await handleStatusUpdate('help');
+    router.push('/resource-locator');
   }
 
   return (
@@ -115,12 +134,31 @@ export default function Header() {
       <h1 className="text-xl font-semibold md:hidden">{pageTitle}</h1>
 
       <div className="flex items-center gap-4">
-        <Button asChild variant="destructive">
-            <Link href="/resource-locator">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" disabled={!user || isSubmitting}>
+              {isSubmitting ? (
+                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
                 <icons.Siren className="mr-2 h-4 w-4" />
+              )}
                 SOS
-            </Link>
-        </Button>
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to send an SOS?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will immediately mark your status as "Need Help" and share your location on the community map for rescue and coordination purposes.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleSos}>Yes, I need help</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
 
         {user ? (
           <DropdownMenu>
