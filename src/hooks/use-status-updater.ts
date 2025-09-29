@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { updateUserStatus } from '@/lib/firebase/status';
 import { GeoPoint, serverTimestamp } from 'firebase/firestore';
+import { AlertService } from '@/lib/firebase/alerts';
 
 export function useStatusUpdater() {
   const { user } = useAuth();
@@ -27,6 +28,7 @@ export function useStatusUpdater() {
     return new Promise<void>((resolve) => {
         const submitStatus = async (location?: GeoPoint) => {
             try {
+                // Update user's personal status on the map
                 await updateUserStatus({
                     userId: user.uid,
                     userName: user.displayName || 'Anonymous',
@@ -35,6 +37,19 @@ export function useStatusUpdater() {
                     location,
                     timestamp: serverTimestamp(),
                 });
+
+                // If it's a help request, also create a system-wide alert
+                if (status === 'help') {
+                    await AlertService.createAlert({
+                        title: `SOS: Help request from ${user.displayName || 'a user'}`,
+                        description: `A user has requested immediate assistance. Check the Community Map for their location.`,
+                        severity: 'Critical',
+                        type: 'Other',
+                        affectedAreas: ['User Location'], // Generic area for SOS
+                        createdBy: user.uid,
+                    })
+                }
+
                 toast({
                     title: "Status Updated",
                     description: `You've been marked as ${status === 'safe' ? 'safe' : 'needing help'}. ${location ? 'Your location has been shared.' : ''}`,
@@ -68,9 +83,9 @@ export function useStatusUpdater() {
             submitStatus(undefined);
           },
           {
-              enableHighAccuracy: false,
+              enableHighAccuracy: true,
               timeout: 5000,
-              maximumAge: 60000
+              maximumAge: 0
           }
         );
     });
