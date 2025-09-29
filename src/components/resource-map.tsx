@@ -66,7 +66,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
           </p>
           <div className="text-xs mt-4 bg-background p-2 rounded-md border text-left space-y-2">
              <p><strong>Step 1: API Key</strong><br/>Add your key to the <code className="font-mono bg-primary/10 text-primary px-1 py-0.5 rounded">.env</code> file: <br /><code className="font-mono text-primary">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE</code></p>
-             <p><strong>Step 2: Enable Billing</strong><br/>The <code className="font-mono text-primary">BillingNotEnabledMapError</code> means you must link a billing account in the Google Cloud Console. See the <a href="https://developers.google.com/maps/documentation/javascript/error-messages#billing-not-enabled-map-error" target="_blank" rel="noopener noreferrer" className="underline">Google Maps documentation</a> for instructions.</p>
+             <p><strong>Step 2: Enable Billing</strong><br/>If you see a `BillingNotEnabledMapError` in the console, you must link a billing account in the Google Cloud Console. See the <a href="https://developers.google.com/maps/documentation/javascript/error-messages#billing-not-enabled-map-error" target="_blank" rel="noopener noreferrer" className="underline">Google Maps documentation</a> for instructions.</p>
           </div>
         </div>
       </Card>
