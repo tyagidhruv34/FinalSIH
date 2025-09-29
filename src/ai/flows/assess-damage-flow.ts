@@ -77,7 +77,11 @@ const assessDamageFlow = ai.defineFlow(
     outputSchema: AssessDamageOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const { output } = await prompt({
+      photoDataUri: input.photoDataUri,
+      description: input.description,
+      location: input.location,
+    });
     if (!output) {
       throw new Error('The AI model did not return a valid assessment.');
     }
