@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -133,9 +134,9 @@ export default function ResourceLocatorPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold">{need.quantity}x {need.item}</h3>
-                                        <p className="text-sm text-muted-foreground">
+                                        <div className="text-sm text-muted-foreground">
                                            Urgency: <Badge variant={need.urgency === 'High' ? 'destructive' : 'secondary'}>{need.urgency}</Badge>
-                                        </p>
+                                        </div>
                                         <p className="text-sm text-muted-foreground">
                                             Contact: {need.contactInfo}
                                         </p>
