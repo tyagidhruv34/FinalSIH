@@ -34,6 +34,7 @@ const navItems = [
   { href: "/emergency-contacts", label: "Emergency Contacts", icon: "Phone" },
   { href: "/settings", label: "Settings", icon: "Settings" },
   { href: "/admin", label: "Admin", icon: "ShieldCheck" },
+  { href: "/feedback", label: "Feedback", icon: "Megaphone" },
 ];
 
 const pageTitles: { [key: string]: string } = {
@@ -49,6 +50,7 @@ const pageTitles: { [key: string]: string } = {
   "/profile": "Profile",
   "/login": "Login",
   "/admin": "Admin Panel",
+  "/feedback": "Feedback",
 };
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {

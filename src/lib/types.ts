@@ -2,6 +2,7 @@
 
 
 
+
 import type { LucideIcon } from "lucide-react";
 import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier, Timestamp } from 'firebase/auth';
 import type { GeoPoint } from "firebase/firestore";
@@ -77,6 +78,14 @@ export type MissingPerson = {
     contactInfo: string;
     photoUrl: string; // URL from Firebase Storage
     faceEmbedding: number[];
+    timestamp: any;
+}
+
+export type Feedback = {
+    id?: string;
+    userId: string;
+    userName: string;
+    message: string;
     timestamp: any;
 }
 
