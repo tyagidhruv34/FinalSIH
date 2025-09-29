@@ -1,15 +1,13 @@
 
 "use client";
 
-import {
-  APIProvider,
-  Map,
-  AdvancedMarker,
-} from "@vis.gl/react-google-maps";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import type { Resource, UserStatus, ResourceNeed } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import * as icons from "lucide-react";
 import { UserCheck, AlertTriangle, PackageOpen, MapPinOff } from "lucide-react";
+import L from 'leaflet';
+import ReactDOMServer from 'react-dom/server';
 
 type ResourceMapProps = {
   resources: Resource[];
@@ -25,119 +23,106 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
   return <Icon {...props} />;
 };
 
-const ResourceNeedMarker = ({ need }: { need: ResourceNeed }) => {
-  if (!need.location) return null;
+const createMarkerIcon = (icon: React.ReactElement) => {
+    return L.divIcon({
+        html: ReactDOMServer.renderToString(icon),
+        className: 'bg-transparent border-0',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32],
+    });
+};
 
-  const markerPosition = { lat: need.location.latitude, lng: need.location.longitude };
-  const isHighUrgency = need.urgency === 'High';
+const resourceIcon = createMarkerIcon(
+    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer shadow-md">
+        <icons.Home className="h-5 w-5 text-primary-foreground" />
+    </div>
+);
 
-  return (
-    <AdvancedMarker
-      position={markerPosition}
-      title={`${need.quantity}x ${need.item} (Urgency: ${need.urgency})`}
-    >
-      <div className="group">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform group-hover:scale-110 shadow-md ${isHighUrgency ? 'bg-orange-500' : 'bg-blue-500'}`}>
-            <PackageOpen className="h-5 w-5 text-white" />
+const userSafeIcon = createMarkerIcon(
+    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center cursor-pointer shadow-md">
+        <UserCheck className="h-5 w-5 text-white" />
+    </div>
+);
+const userHelpIcon = createMarkerIcon(
+    <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center cursor-pointer shadow-md">
+        <AlertTriangle className="h-5 w-5 text-white" />
+    </div>
+);
+
+const needLowUrgencyIcon = createMarkerIcon(
+    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer shadow-md">
+        <PackageOpen className="h-5 w-5 text-white" />
+    </div>
+);
+const needHighUrgencyIcon = createMarkerIcon(
+    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center cursor-pointer shadow-md">
+        <PackageOpen className="h-5 w-5 text-white" />
+    </div>
+);
+
+const getResourceMarkerIcon = (resource: Resource) => {
+    return createMarkerIcon(
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer shadow-md">
+            <LucideIcon name={resource.icon} className="h-5 w-5 text-primary-foreground" />
         </div>
-        <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          <p className="font-bold">{need.quantity}x ${need.item}</p>
-          <p>Urgency: <span className={isHighUrgency ? 'text-orange-600' : 'text-blue-600'}>{need.urgency}</span></p>
-          <p>Contact: {need.contactInfo}</p>
-        </div>
-      </div>
-    </AdvancedMarker>
-  )
-}
-
+    );
+};
 
 export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [] }: ResourceMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  const position = { lat: 28.6139, lng: 77.2090 }; // Delhi, India
-
-  if (!apiKey) {
-    return (
-      <Card className="h-[500px] w-full flex items-center justify-center bg-muted/50 rounded-lg border-dashed border-2">
-        <div className="text-center text-muted-foreground p-4">
-          <MapPinOff className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h3 className="text-lg font-semibold text-foreground mt-4">Map Configuration Needed</h3>
-          <p className="mt-2 text-sm">
-            To enable the map, you need to add a Google Maps API Key and enable billing on your Google Cloud project.
-          </p>
-          <div className="text-xs mt-4 bg-background p-2 rounded-md border text-left space-y-2">
-             <p><strong>Step 1: API Key</strong><br/>Add your key to the <code className="font-mono bg-primary/10 text-primary px-1 py-0.5 rounded">.env</code> file: <br /><code className="font-mono text-primary">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE</code></p>
-             <p><strong>Step 2: Enable Billing</strong><br/>If you see a `BillingNotEnabledMapError` in the console, you must link a billing account in the Google Cloud Console. See the <a href="https://developers.google.com/maps/documentation/javascript/error-messages#billing-not-enabled-map-error" target="_blank" rel="noopener noreferrer" className="underline">Google Maps documentation</a> for instructions.</p>
-          </div>
-        </div>
-      </Card>
-    );
-  }
+  const position: [number, number] = [28.6139, 77.2090]; // Delhi, India
 
   return (
     <div className="h-[500px] w-full rounded-lg overflow-hidden border">
-      <APIProvider apiKey={apiKey}>
-        <Map
-          defaultCenter={position}
-          defaultZoom={11}
-          mapId="aapda_guide_map"
-          gestureHandling={"greedy"}
-          disableDefaultUI={true}
-        >
-          {/* Official Resources Markers */}
-          {resources.map((resource) => (
-            <AdvancedMarker
-              key={`res-${resource.id}`}
-              position={resource.position}
-              title={resource.name}
-            >
-              <div className="group">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer transition-transform group-hover:scale-110 shadow-md">
-                   <LucideIcon name={resource.icon} className="h-5 w-5 text-primary-foreground" />
-                </div>
-                 <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <p className="font-bold">{resource.name}</p>
-                  <p>{resource.address}</p>
-                </div>
-              </div>
-            </AdvancedMarker>
-          ))}
+        <MapContainer center={position} zoom={11} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {/* Official Resources Markers */}
+            {resources.map((resource) => (
+                <Marker key={`res-${resource.id}`} position={[resource.position.lat, resource.position.lng]} icon={getResourceMarkerIcon(resource)}>
+                    <Popup>
+                        <p className="font-bold">{resource.name}</p>
+                        <p>{resource.address}</p>
+                    </Popup>
+                </Marker>
+            ))}
 
-           {/* User Status Markers */}
+            {/* User Status Markers */}
             {userStatuses.map((status) => {
               if (!status.location) return null;
-              const markerPosition = { lat: status.location.latitude, lng: status.location.longitude };
+              const markerPosition: [number, number] = [status.location.latitude, status.location.longitude];
               const isSafe = status.status === 'safe';
 
               return (
-                <AdvancedMarker
-                  key={`user-${status.id}`}
-                  position={markerPosition}
-                  title={`${status.userName} - ${status.status}`}
-                >
-                  <div className="group">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform group-hover:scale-110 shadow-md ${isSafe ? 'bg-green-500' : 'bg-red-600'}`}>
-                        {isSafe ? (
-                            <UserCheck className="h-5 w-5 text-white" />
-                        ) : (
-                            <AlertTriangle className="h-5 w-5 text-white" />
-                        )}
-                    </div>
-                    <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <Marker key={`user-${status.id}`} position={markerPosition} icon={isSafe ? userSafeIcon : userHelpIcon}>
+                   <Popup>
                       <p className="font-bold">{status.userName}</p>
                       <p>Status: <span className={isSafe ? 'text-green-600' : 'text-red-600'}>{status.status}</span></p>
-                    </div>
-                  </div>
-                </AdvancedMarker>
+                    </Popup>
+                </Marker>
               )
             })}
 
             {/* Resource Need Markers */}
-            {resourceNeeds.map((need) => (
-              <ResourceNeedMarker key={`need-${need.id}`} need={need} />
-            ))}
-
-        </Map>
-      </APIProvider>
+            {resourceNeeds.map((need) => {
+                if (!need.location) return null;
+                const markerPosition: [number, number] = [need.location.latitude, need.location.longitude];
+                const isHighUrgency = need.urgency === 'High';
+                
+                return (
+                    <Marker key={`need-${need.id}`} position={markerPosition} icon={isHighUrgency ? needHighUrgencyIcon : needLowUrgencyIcon}>
+                        <Popup>
+                            <p className="font-bold">{need.quantity}x {need.item}</p>
+                            <p>Urgency: <span className={isHighUrgency ? 'text-orange-600' : 'text-blue-600'}>{need.urgency}</span></p>
+                            <p>Contact: {need.contactInfo}</p>
+                        </Popup>
+                    </Marker>
+                )
+            })}
+        </MapContainer>
     </div>
   );
 }

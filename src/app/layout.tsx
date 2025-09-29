@@ -7,6 +7,10 @@ import Header from '@/components/layout/header';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/hooks/use-auth';
 
+// Leaflet CSS for react-leaflet
+import 'leaflet/dist/leaflet.css';
+
+
 export const metadata: Metadata = {
   title: 'Aapda Guide',
   description: 'A disaster management app to help you stay safe.',
