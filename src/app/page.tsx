@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertService } from '@/lib/firebase/alerts';
 import type { Alert, UserStatus } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,24 +43,30 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        setLoading(true);
-        const fetchedAlerts = await AlertService.getAlerts();
+    setLoading(true);
+
+    // Listen for real-time alerts
+    const alertsQuery = query(
+        collection(db, 'alerts'),
+        orderBy('timestamp', 'desc'),
+        limit(10) // Limit to the 10 most recent alerts
+    );
+
+    const unsubscribeAlerts = onSnapshot(alertsQuery, (querySnapshot) => {
+        const fetchedAlerts: Alert[] = [];
+        querySnapshot.forEach((doc) => {
+            fetchedAlerts.push({ id: doc.id, ...doc.data() } as Alert);
+        });
         const sortedAlerts = fetchedAlerts.sort((a, b) => {
             return severityOrder[b.severity] - severityOrder[a.severity];
         });
         setAlerts(sortedAlerts);
-        setError(null);
-      } catch (e) {
-        setError("Failed to load alerts. Please try again later.");
-        console.error(e);
-      } finally {
         setLoading(false);
-      }
-    };
-
-    fetchAlerts();
+    }, (err) => {
+        console.error("Error fetching alerts:", err);
+        setError("Failed to load alerts.");
+        setLoading(false);
+    });
 
     // Listen for real-time help requests
     const helpRequestQuery = query(
@@ -71,7 +76,7 @@ export default function DashboardPage() {
         limit(5)
     );
 
-    const unsubscribe = onSnapshot(helpRequestQuery, (querySnapshot) => {
+    const unsubscribeHelpRequests = onSnapshot(helpRequestQuery, (querySnapshot) => {
         const requests: UserStatus[] = [];
         querySnapshot.forEach((doc) => {
             requests.push({ id: doc.id, ...doc.data() } as UserStatus);
@@ -83,7 +88,10 @@ export default function DashboardPage() {
     });
 
 
-    return () => unsubscribe();
+    return () => {
+        unsubscribeAlerts();
+        unsubscribeHelpRequests();
+    };
 
   }, []);
 
@@ -169,10 +177,12 @@ export default function DashboardPage() {
                                 {alert.affectedAreas.map(area => <Badge key={area} variant="outline">{area}</Badge>)}
                             </div>
                         </div>
-                        <div className="mt-4 flex items-center text-xs text-muted-foreground">
-                          <Clock className="mr-1 h-3 w-3" />
-                          <span>{formatDistanceToNow(alert.timestamp.toDate())} ago</span>
-                        </div>
+                        {alert.timestamp && (
+                            <div className="mt-4 flex items-center text-xs text-muted-foreground">
+                              <Clock className="mr-1 h-3 w-3" />
+                              <span>{formatDistanceToNow(alert.timestamp.toDate())} ago</span>
+                            </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
