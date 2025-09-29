@@ -8,6 +8,7 @@ import {
 import type { Resource, UserStatus } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import * as icons from "lucide-react";
+import { UserCheck, AlertTriangle } from "lucide-react";
 
 type ResourceMapProps = {
   resources: Resource[];
@@ -25,7 +26,7 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
 
 export default function ResourceMap({ resources, userStatuses = [] }: ResourceMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  const position = { lat: 28.6139, lng: 77.209 }; // Delhi, India
+  const position = { lat: 28.6139, lng: 77.2090 }; // Delhi, India
 
   if (!apiKey) {
     return (
@@ -75,8 +76,8 @@ export default function ResourceMap({ resources, userStatuses = [] }: ResourceMa
 
            {/* User Status Markers */}
             {userStatuses.map((status) => {
-              const markerColor = status.status === 'safe' ? 'bg-green-500' : 'bg-red-600';
               const markerPosition = { lat: status.location.latitude, lng: status.location.longitude };
+              const isSafe = status.status === 'safe';
 
               return (
                 <AdvancedMarker
@@ -85,10 +86,16 @@ export default function ResourceMap({ resources, userStatuses = [] }: ResourceMa
                   title={`${status.userName} - ${status.status}`}
                 >
                   <div className="group">
-                    <div className={`w-3 h-3 rounded-full ${markerColor} border-2 border-white shadow-lg`}></div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform group-hover:scale-110 shadow-md ${isSafe ? 'bg-green-500' : 'bg-red-600'}`}>
+                        {isSafe ? (
+                            <UserCheck className="h-5 w-5 text-white" />
+                        ) : (
+                            <AlertTriangle className="h-5 w-5 text-white" />
+                        )}
+                    </div>
                     <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 bg-background text-foreground text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                       <p className="font-bold">{status.userName}</p>
-                      <p>Status: <span className={status.status === 'safe' ? 'text-green-600' : 'text-red-600'}>{status.status}</span></p>
+                      <p>Status: <span className={isSafe ? 'text-green-600' : 'text-red-600'}>{status.status}</span></p>
                     </div>
                   </div>
                 </AdvancedMarker>
