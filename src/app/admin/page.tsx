@@ -59,6 +59,10 @@ export default function AdminAlertPage() {
   const { control, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<AlertFormValues>({
     resolver: zodResolver(alertFormSchema),
     defaultValues: {
+      title: '',
+      description: '',
+      severity: 'Medium',
+      type: 'Other',
       affectedAreas: [],
     }
   });
@@ -391,5 +395,7 @@ export default function AdminAlertPage() {
     </div>
   );
 }
+
+    
 
     
