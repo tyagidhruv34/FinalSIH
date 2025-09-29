@@ -59,7 +59,7 @@ export type DamageReport = {
     userId: string;
     description: string;
     imageUrl: string;
-    location: GeoPoint;
+    location?: GeoPoint;
     assessment: AssessDamageOutput;
     timestamp: any;
 }

@@ -36,7 +36,7 @@ export default function DamageAssessmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -54,7 +54,7 @@ export default function DamageAssessmentPage() {
         setLocationError(null);
       },
       (err) => {
-        const errorMessage = "Could not get your location. Analysis will proceed without location data.";
+        const errorMessage = "Could not get your location. Analysis will proceed without location data, and the report will not be saved to the database.";
         console.warn(`ERROR(${err.code}): ${err.message}`);
         setLocationError(errorMessage);
         toast({
@@ -133,13 +133,18 @@ export default function DamageAssessmentPage() {
             assessment: result,
             timestamp: serverTimestamp(),
         });
+         toast({
+            title: "Analysis Complete & Saved",
+            description: "The AI has assessed the damage and the report has been saved.",
+         });
+      } else {
+         toast({
+            title: "Analysis Complete",
+            description: "The AI has assessed the damage. Report was not saved because location was unavailable.",
+            variant: "default"
+         });
       }
 
-
-      toast({
-        title: "Analysis Complete",
-        description: "The AI has assessed the damage.",
-      });
     } catch (err) {
       console.error(err);
       setError("An error occurred during the analysis. The AI model may be unavailable. Please try again later.");
@@ -171,7 +176,7 @@ export default function DamageAssessmentPage() {
           <CardHeader>
             <CardTitle>Submit a Damage Report</CardTitle>
             <CardDescription>
-              Provide an image and an optional description of the damage.
+              Provide an image and an optional description of the damage. Reports are only saved if location is available.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
