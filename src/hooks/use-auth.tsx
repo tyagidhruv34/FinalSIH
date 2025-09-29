@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
-import { auth, signInWithGoogle, signOut as firebaseSignOut, signInWithPhone, verifyOtp } from '@/lib/firebase/auth';
+import { auth, signInWithGoogle, signOut as firebaseSignOut, signInWithPhone, verifyOtp, handleRedirectResult } from '@/lib/firebase/auth';
 
 declare global {
     interface Window {
@@ -28,6 +28,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle the redirect result when the app loads
+    handleRedirectResult();
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
