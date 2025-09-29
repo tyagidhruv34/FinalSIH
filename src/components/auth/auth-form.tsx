@@ -25,17 +25,21 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const isPhoneAuthDisabled = true; // Temporarily disable phone auth
+  const isPhoneAuthDisabled = false; // Re-enable phone auth
 
   useEffect(() => {
     if (isPhoneAuthDisabled || window.recaptchaVerifier) return;
     
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'invisible',
-      'callback': () => {
-        // reCAPTCHA solved, you can proceed with sign-in.
-      }
-    });
+    // Check if the container is empty before creating a new verifier
+    const recaptchaContainer = document.getElementById('recaptcha-container');
+    if (recaptchaContainer && !recaptchaContainer.hasChildNodes()) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': () => {
+                // reCAPTCHA solved, you can proceed with sign-in.
+            }
+        });
+    }
   }, [isPhoneAuthDisabled]);
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
@@ -74,7 +78,8 @@ export default function AuthForm() {
     try {
       await verifyOtp(confirmationResult, otp);
       toast({ title: 'Success!', description: 'You are now logged in.' });
-    } catch (error: any) {
+    } catch (error: any)
+{
       console.error(error);
       toast({ variant: 'destructive', title: 'Error', description: error.message || 'Invalid OTP. Please try again.' });
     } finally {
