@@ -7,7 +7,6 @@ import {
   CardTitle,
   CardDescription
 } from "@/components/ui/card";
-import ResourceMap from "@/components/resource-map";
 import { resources } from "@/lib/data";
 import * as icons from "lucide-react";
 import type { UserStatus, Resource, ResourceNeed } from "@/lib/types";
@@ -20,6 +19,13 @@ import { PlusCircle, ShoppingCart } from "lucide-react";
 import RequestResourceForm from "@/components/request-resource-form";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
+import dynamic from 'next/dynamic';
+import { Skeleton } from "@/components/ui/skeleton";
+
+const ResourceMap = dynamic(() => import('@/components/resource-map'), { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[500px] w-full rounded-lg" />
+});
 
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
