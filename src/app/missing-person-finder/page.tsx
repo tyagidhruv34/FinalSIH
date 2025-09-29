@@ -68,7 +68,7 @@ export default function MissingPersonFinderPage() {
   const clearImage = () => {
     setImageFile(null);
     setImagePreview(null);
-    if (fileInputref.current) {
+    if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
