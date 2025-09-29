@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Clock, Map, ListFilter, ServerCrash, Users } from "lucide-react";
+import { Clock, Map, ListFilter, ServerCrash, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,10 +22,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 
 const severityStyles: { [key in Alert['severity']]: string } = {
-  "Critical": "bg-accent text-accent-foreground",
-  "High": "bg-destructive text-destructive-foreground",
-  "Medium": "bg-yellow-500 text-black",
-  "Low": "bg-primary/80 text-primary-foreground"
+  "Critical": "border-accent text-accent-foreground bg-accent/10",
+  "High": "border-destructive text-destructive-foreground bg-destructive/10",
+  "Medium": "border-yellow-500 text-yellow-600 bg-yellow-500/10",
+  "Low": "border-primary text-primary bg-primary/10"
 };
 
 const severityOrder: { [key in Alert['severity']]: number } = {
@@ -57,7 +57,10 @@ export default function DashboardPage() {
             fetchedAlerts.push({ id: doc.id, ...doc.data() } as Alert);
         });
         const sortedAlerts = fetchedAlerts.sort((a, b) => {
-            return severityOrder[b.severity] - severityOrder[a.severity];
+            if (!a.timestamp || !b.timestamp) return 0;
+            const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
+            if (severityDiff !== 0) return severityDiff;
+            return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
         setAlerts(sortedAlerts);
         setLoading(false);
@@ -152,13 +155,13 @@ export default function DashboardPage() {
               {!loading && !error && alerts.length > 0 && (
                 <div className="grid gap-6 md:grid-cols-2">
                   {alerts.map((alert) => (
-                    <Card key={alert.id} className={cn("flex flex-col border-l-4", `border-${severityStyles[alert.severity].split(' ')[0].replace('bg-','')}_`)}>
+                    <Card key={alert.id} className={cn("flex flex-col border-l-4", severityStyles[alert.severity].split(' ')[0].replace('bg-','border-'))}>
                       <CardHeader className="pb-2">
                         <div className="flex items-start justify-between">
                             <CardTitle className="text-lg font-medium">
                                 {alert.title}
                             </CardTitle>
-                            <Badge className={cn(severityStyles[alert.severity], 'rounded-md')}>
+                            <Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'} className={cn(severityStyles[alert.severity], 'rounded-md')}>
                                 {alert.severity}
                             </Badge>
                         </div>
@@ -168,12 +171,14 @@ export default function DashboardPage() {
                         <p className="mt-2 text-sm text-foreground/80 flex-1">
                           {alert.description}
                         </p>
-                        <div className="mt-4">
-                            <h4 className="text-xs font-semibold text-muted-foreground mb-2">AFFECTED AREAS</h4>
-                            <div className="flex flex-wrap gap-1">
-                                {alert.affectedAreas.map(area => <Badge key={area} variant="secondary">{area}</Badge>)}
+                        {alert.affectedAreas && alert.affectedAreas.length > 0 && (
+                            <div className="mt-4">
+                                <h4 className="text-xs font-semibold text-muted-foreground mb-2">AFFECTED AREAS</h4>
+                                <div className="flex flex-wrap gap-1">
+                                    {alert.affectedAreas.map(area => <Badge key={area} variant="secondary">{area}</Badge>)}
+                                </div>
                             </div>
-                        </div>
+                        )}
                       </CardContent>
                        {alert.timestamp && (
                             <div className="px-6 pb-4 flex items-center text-xs text-muted-foreground">
@@ -241,3 +246,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
