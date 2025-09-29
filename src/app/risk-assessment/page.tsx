@@ -55,6 +55,10 @@ export default function RiskAssessmentPage() {
 
   const { control, handleSubmit, formState: { errors } } = useForm<AssessmentFormValues>({
     resolver: zodResolver(assessmentFormSchema),
+    defaultValues: {
+      locationDescription: '',
+      disasterType: 'Cyclone',
+    }
   });
 
   if (authLoading) return <p>Loading...</p>;
