@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, Film, Gamepad2, Check, X, Box, Droplets, Utensils, FirstAidKit, Flashlight, Radio } from "lucide-react";
+import { GraduationCap, Film, Gamepad2, Check, X, Box, Droplets, Utensils, BriefcaseMedical, Flashlight, Radio } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Quiz data
@@ -46,7 +46,7 @@ const quizQuestions = [
 const safetyKitItems = [
     { icon: Droplets, name: "Water", description: "1 gallon per person, per day" },
     { icon: Utensils, name: "Food", description: "Non-perishable, 3-day supply" },
-    { icon: FirstAidKit, name: "First-Aid Kit", description: "Bandages, antiseptic, medicines" },
+    { icon: BriefcaseMedical, name: "First-Aid Kit", description: "Bandages, antiseptic, medicines" },
     { icon: Flashlight, name: "Flashlight", description: "With extra batteries" },
     { icon: Radio, name: "Hand-crank Radio", description: "To get news and alerts" },
     { icon: Box, name: "Other essentials", description: "Whistle, masks, local maps" },
@@ -246,3 +246,4 @@ export default function LearningHubPage() {
   );
 }
 
+    
