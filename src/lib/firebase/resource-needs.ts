@@ -7,12 +7,9 @@ export class ResourceNeedService {
   private static needsCollection = collection(db, 'resource_needs');
 
   // Create a new resource need in Firestore
-  static async createResourceNeed(needData: Omit<ResourceNeed, 'id' | 'timestamp'>): Promise<string> {
+  static async createResourceNeed(needData: Omit<ResourceNeed, 'id'>): Promise<string> {
     try {
-      const docRef = await addDoc(this.needsCollection, {
-        ...needData,
-        timestamp: serverTimestamp(),
-      });
+      const docRef = await addDoc(this.needsCollection, needData);
       return docRef.id;
     } catch (error) {
       console.error("Error creating resource need: ", error);

@@ -17,10 +17,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { ResourceNeedService } from '@/lib/firebase/resource-needs';
-import { GeoPoint } from 'firebase/firestore';
+import { GeoPoint, serverTimestamp } from 'firebase/firestore';
 
 const resourceNeedSchema = z.object({
   item: z.enum(['Food', 'Water', 'Medicine', 'Shelter']),
@@ -40,6 +40,7 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [location, setLocation] = useState<GeoPoint | null>(null);
 
   const { control, handleSubmit, formState: { errors }, reset } = useForm<ResourceNeedFormValues>({
     resolver: zodResolver(resourceNeedSchema),
@@ -48,47 +49,72 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
     }
   });
 
-  const onSubmit = (data: ResourceNeedFormValues) => {
+  useEffect(() => {
+    if (open) {
+      // Reset state when dialog opens
+      setLocation(null);
+      
+      // Pre-fetch location
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation(new GeoPoint(position.coords.latitude, position.coords.longitude));
+        },
+        (err) => {
+          console.warn(`ERROR(${err.code}): ${err.message}`);
+          // Don't close the form, just warn the user. They can try submitting again.
+          toast({
+            variant: "destructive",
+            title: "Location Error",
+            description: "Could not get your location. Please enable location services to submit a request.",
+          });
+        }
+      );
+    }
+  }, [open, toast]);
+
+  const onSubmit = async (data: ResourceNeedFormValues) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Not Authenticated', description: 'You must be logged in to make a request.' });
       return;
     }
     
+    if (!location) {
+        toast({ variant: 'destructive', title: 'Location Not Ready', description: 'Location is not available yet. Please wait a moment and try again.' });
+        return;
+    }
+
     setIsSubmitting(true);
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          await ResourceNeedService.createResourceNeed({
-            ...data,
-            userId: user.uid,
-            location: new GeoPoint(latitude, longitude),
-            fulfilled: false,
-          });
-          toast({
-            title: 'Request Submitted',
-            description: 'Your resource need has been posted to the community map.',
-          });
-          reset();
-          onOpenChange(false);
-        } catch (error) {
-          console.error("Error creating resource need: ", error);
-          toast({ variant: 'destructive', title: 'Error', description: 'Could not submit your request.' });
-        } finally {
-          setIsSubmitting(false);
-        }
-      },
-      (error) => {
-        console.error("Geolocation error: ", error);
-        toast({ variant: 'destructive', title: 'Location Error', description: 'Could not get your location. Please enable location services.' });
-        setIsSubmitting(false);
-      }
-    );
+    try {
+      await ResourceNeedService.createResourceNeed({
+        ...data,
+        userId: user.uid,
+        location: location,
+        fulfilled: false,
+        timestamp: serverTimestamp(),
+      });
+      toast({
+        title: 'Request Submitted',
+        description: 'Your resource need has been posted to the community map.',
+      });
+      reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error creating resource need: ", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not submit your request.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+        onOpenChange(isOpen);
+        if (!isOpen) {
+            reset();
+            setLocation(null);
+        }
+    }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Request a Resource</DialogTitle>
@@ -149,9 +175,14 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
-              Submit Request
+            <Button type="submit" disabled={isSubmitting || !location}>
+              {isSubmitting ? (
+                <><Loader2 className="mr-2 animate-spin" /> Submitting...</>
+              ) : !location ? (
+                <><Loader2 className="mr-2 animate-spin" /> Getting Location...</>
+              ) : (
+                'Submit Request'
+              )}
             </Button>
           </DialogFooter>
         </form>
