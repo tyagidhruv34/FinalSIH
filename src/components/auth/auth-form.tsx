@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ConfirmationResult, RecaptchaVerifier, FirebaseError } from 'firebase/auth';
+import { ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import { auth } from '@/lib/firebase/auth';
 
 declare global {
@@ -45,8 +45,8 @@ export default function AuthForm() {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
-    } catch (error) {
-      if (error instanceof FirebaseError && error.code === 'auth/cancelled-popup-request') {
+    } catch (error: any) {
+      if (error?.code === 'auth/cancelled-popup-request') {
         toast({
           variant: 'destructive',
           title: 'Sign-in Cancelled',
