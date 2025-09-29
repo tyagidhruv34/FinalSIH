@@ -25,7 +25,7 @@ export default function AuthForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const isPhoneAuthDisabled = false; // Re-enable phone auth
+  const isPhoneAuthDisabled = true; // Phone auth is temporarily disabled to provide a stable login experience
 
   useEffect(() => {
     if (isPhoneAuthDisabled || window.recaptchaVerifier) return;
@@ -135,7 +135,7 @@ export default function AuthForm() {
 
       {isPhoneAuthDisabled ? (
         <div className="text-center text-sm text-muted-foreground">
-          <p>Phone sign-in is temporarily unavailable. Please use Google Sign-In.</p>
+          <p>Phone sign-in is temporarily unavailable. Please use Google Sign-In for a stable experience.</p>
         </div>
       ) : !confirmationResult ? (
         <form onSubmit={handlePhoneSignIn} className="space-y-4">
