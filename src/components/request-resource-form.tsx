@@ -45,7 +45,10 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
   const { control, handleSubmit, formState: { errors }, reset } = useForm<ResourceNeedFormValues>({
     resolver: zodResolver(resourceNeedSchema),
     defaultValues: {
+        item: 'Water',
+        quantity: 1,
         urgency: 'Medium',
+        contactInfo: '',
     }
   });
 
