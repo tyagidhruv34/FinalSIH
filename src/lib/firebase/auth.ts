@@ -9,7 +9,10 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
-  User
+  User,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import app, { db } from './firebase';
@@ -19,16 +22,19 @@ export const auth = getAuth(app);
 
 const googleProvider = new GoogleAuthProvider();
 
-export const createUserProfileDocument = async (user: User) => {
+export const createUserProfileDocument = async (user: User, additionalData: { displayName?: string } = {}) => {
   if (!user) return;
 
   const userRef = doc(db, 'users', user.uid);
   const snapshot = await getDoc(userRef);
 
   if (!snapshot.exists()) {
-    const { uid, email, displayName, photoURL, phoneNumber } = user;
+    const { uid, email, photoURL, phoneNumber } = user;
     const createdAt = new Date();
     
+    // Use displayName from additionalData if available (for email/pass signup)
+    const displayName = additionalData.displayName || user.displayName;
+
     const userProfile: UserProfile = {
       uid,
       email,
@@ -40,6 +46,10 @@ export const createUserProfileDocument = async (user: User) => {
 
     try {
       await setDoc(userRef, userProfile);
+      // If a display name was provided, update the user's auth profile too
+      if (displayName && !user.displayName) {
+          await updateProfile(user, { displayName });
+      }
     } catch (error) {
       console.error("Error creating user profile", error);
     }
@@ -51,6 +61,16 @@ export const createUserProfileDocument = async (user: User) => {
 export const signInWithGoogle = async () => {
     await signInWithRedirect(auth, googleProvider);
 };
+
+export const signUpWithEmail = async (email: string, password: string, displayName: string) => {
+    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    await createUserProfileDocument(user, { displayName });
+};
+
+export const signInWithEmail = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
+};
+
 
 export const signInWithPhone = async (phoneNumber: string, verifier: RecaptchaVerifier): Promise<ConfirmationResult> => {
     return signInWithPhoneNumber(auth, phoneNumber, verifier);

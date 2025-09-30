@@ -1,7 +1,7 @@
 
 
 import type { LucideIcon } from "lucide-react";
-import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 import type { GeoPoint, Timestamp } from "firebase/firestore";
 import type { AssessDamageOutput } from "@/ai/flows/assess-damage-flow";
 
@@ -140,7 +140,5 @@ export type AuthContextType = {
   user: FirebaseUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithPhone: (phoneNumber: string, verifier: RecaptchaVerifier) => Promise<ConfirmationResult>;
-  verifyOtp: (confirmationResult: ConfirmationResult, otp: string) => Promise<void>;
   signOut: () => Promise<void>;
 };

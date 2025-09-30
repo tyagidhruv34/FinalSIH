@@ -7,48 +7,31 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
-import { auth } from '@/lib/firebase/auth';
+import { auth, signUpWithEmail, signInWithEmail } from '@/lib/firebase/auth';
 import { Alert, AlertDescription } from '../ui/alert';
-
-declare global {
-    interface Window {
-        recaptchaVerifier?: RecaptchaVerifier;
-        grecaptcha?: any;
-    }
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2 } from 'lucide-react';
 
 export default function AuthForm() {
-  const { signInWithGoogle, signInWithPhone, verifyOtp } = useAuth();
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const { signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const [isNonLocalhost, setIsNonLocalhost] = useState(false);
+  
+  // States for email/password
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  
+  const [activeTab, setActiveTab] = useState('signin');
 
-  const isPhoneAuthDisabled = true; // Keep phone auth disabled as per previous errors.
 
   useEffect(() => {
-    if (window.location.hostname !== 'localhost') {
+    if (window.location.hostname !== 'localhost' && !window.location.hostname.endsWith('.app') && !window.location.hostname.endsWith('.dev')) {
         setIsNonLocalhost(true);
     }
   }, [])
 
-  useEffect(() => {
-    if (isPhoneAuthDisabled || window.recaptchaVerifier) return;
-    
-    // Check if the container is empty before creating a new verifier
-    const recaptchaContainer = document.getElementById('recaptcha-container');
-    if (recaptchaContainer && !recaptchaContainer.hasChildNodes()) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
-            'callback': () => {
-                // reCAPTCHA solved, you can proceed with sign-in.
-            }
-        });
-    }
-  }, [isPhoneAuthDisabled]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -70,59 +53,60 @@ export default function AuthForm() {
       }
     }
   };
-
-  const handlePhoneSignIn = async (e: React.FormEvent) => {
+  
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isPhoneAuthDisabled) return;
-    
     setLoading(true);
-    
-    if (!window.recaptchaVerifier) {
-        toast({ variant: 'destructive', title: 'Error', description: 'reCAPTCHA not initialized. Please refresh.' });
-        setLoading(false);
-        return;
-    }
 
     try {
-      const fullPhoneNumber = `+91${phoneNumber}`;
-      const result = await signInWithPhone(fullPhoneNumber, window.recaptchaVerifier);
-      setConfirmationResult(result);
-      toast({ title: 'OTP Sent!', description: 'Please check your phone for the verification code.' });
+        if (activeTab === 'signup') {
+            if (!displayName) {
+                toast({ variant: 'destructive', title: 'Error', description: 'Display name is required.'});
+                setLoading(false);
+                return;
+            }
+            await signUpWithEmail(email, password, displayName);
+            toast({ title: 'Success!', description: 'Your account has been created.' });
+        } else {
+            await signInWithEmail(email, password);
+            toast({ title: 'Success!', description: 'You are now logged in.' });
+        }
     } catch (error: any) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to send OTP. Please try again.' });
-      if (window.grecaptcha && window.recaptchaVerifier) {
-        window.grecaptcha.reset(window.recaptchaVerifier.widgetId);
-      }
+        let friendlyMessage = 'An unexpected error occurred.';
+        if(error.code) {
+            switch(error.code) {
+                case 'auth/email-already-in-use':
+                    friendlyMessage = 'This email is already in use. Please sign in instead.';
+                    break;
+                case 'auth/invalid-email':
+                    friendlyMessage = 'Please enter a valid email address.';
+                    break;
+                case 'auth/weak-password':
+                    friendlyMessage = 'The password is too weak. Please use at least 6 characters.';
+                    break;
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    friendlyMessage = 'Invalid email or password.';
+                    break;
+                default:
+                    friendlyMessage = error.message;
+            }
+        }
+        toast({ variant: 'destructive', title: 'Authentication Error', description: friendlyMessage });
+        console.error(error);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+  }
 
-  const handleOtpVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isPhoneAuthDisabled || !confirmationResult) return;
-
-    setLoading(true);
-    try {
-      await verifyOtp(confirmationResult, otp);
-      toast({ title: 'Success!', description: 'You are now logged in.' });
-    } catch (error: any)
-{
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: error.message || 'Invalid OTP. Please try again.' });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
-       <div id="recaptcha-container"></div>
        {isNonLocalhost && (
           <Alert variant="destructive">
             <AlertDescription className="text-center text-xs">
-              Google Sign-In is disabled on local network IPs. Please use `localhost` on your computer to sign in.
+              Google Sign-In might be restricted on this domain. If it fails, please try email/password.
             </AlertDescription>
           </Alert>
        )}
@@ -143,55 +127,53 @@ export default function AuthForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            {isPhoneAuthDisabled ? 'Sign in with Google to continue' : 'Or continue with'}
+            Or continue with email
           </span>
         </div>
       </div>
-
-      {isPhoneAuthDisabled ? (
-        <div className="text-center text-sm text-muted-foreground">
-          <p>To enable phone sign-in, please add a billing account to your Firebase project in the Firebase console.</p>
-        </div>
-      ) : !confirmationResult ? (
-        <form onSubmit={handlePhoneSignIn} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-background text-sm text-muted-foreground">+91</span>
-                <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="9876543210"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    required
-                    className="rounded-l-none"
-                />
-            </div>
-          </div>
-          <Button type="submit" className="w-full" disabled={loading || phoneNumber.length !== 10}>
-            {loading ? 'Sending...' : 'Send OTP'}
-          </Button>
-        </form>
-      ) : (
-        <form onSubmit={handleOtpVerify} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="otp">Enter OTP</Label>
-            <Input
-              id="otp"
-              type="text"
-              placeholder="123456"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading || otp.length !== 6}>
-            {loading ? 'Verifying...' : 'Verify OTP'}
-          </Button>
-          <Button variant="link" size="sm" onClick={() => setConfirmationResult(null)}>Use a different number</Button>
-        </form>
-      )}
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+        </TabsList>
+        <TabsContent value="signin">
+            <form onSubmit={handleEmailAuth} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                    <Label htmlFor="email-signin">Email</Label>
+                    <Input id="email-signin" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="password-signin">Password</Label>
+                    <Input id="password-signin" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                    {loading && <Loader2 className="mr-2 animate-spin" />}
+                    Sign In
+                </Button>
+            </form>
+        </TabsContent>
+        <TabsContent value="signup">
+             <form onSubmit={handleEmailAuth} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                    <Label htmlFor="displayName-signup">Display Name</Label>
+                    <Input id="displayName-signup" type="text" placeholder="Your Name" value={displayName} onChange={e => setDisplayName(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="email-signup">Email</Label>
+                    <Input id="email-signup" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="password-signup">Password</Label>
+                    <Input id="password-signup" type="password" placeholder="Min. 6 characters" value={password} onChange={e => setPassword(e.target.value)} required />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                     {loading && <Loader2 className="mr-2 animate-spin" />}
+                    Create Account
+                </Button>
+            </form>
+        </TabsContent>
+      </Tabs>
 
     </div>
   );

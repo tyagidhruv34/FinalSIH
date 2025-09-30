@@ -3,20 +3,13 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
-import { auth, signInWithGoogle, signOut as firebaseSignOut, signInWithPhone, verifyOtp, handleRedirectResult } from '@/lib/firebase/auth';
+import { auth, signInWithGoogle, signOut as firebaseSignOut, handleRedirectResult } from '@/lib/firebase/auth';
 
-declare global {
-    interface Window {
-        recaptchaVerifier: RecaptchaVerifier;
-    }
-}
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithPhone: (phoneNumber: string, verifier: RecaptchaVerifier) => Promise<ConfirmationResult>;
-  verifyOtp: (confirmationResult: ConfirmationResult, otp: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -44,10 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     signInWithGoogle: async () => {
       await signInWithGoogle();
-    },
-    signInWithPhone,
-    verifyOtp: async (confirmationResult, otp) => {
-        await verifyOtp(confirmationResult, otp);
     },
     signOut: async () => {
       await firebaseSignOut();
