@@ -24,71 +24,84 @@ export function useStatusUpdater() {
     }
 
     setIsSubmitting(status);
-    
-    return new Promise<void>((resolve) => {
-        const submitStatus = async (location?: GeoPoint) => {
-            try {
-                // Update user's personal status on the map
-                await updateUserStatus({
-                    userId: user.uid,
-                    userName: user.displayName || 'Anonymous',
-                    userAvatarUrl: user.photoURL || undefined,
-                    status,
-                    location,
-                    timestamp: serverTimestamp(),
-                });
 
-                // If it's a help request, also create a system-wide alert
-                if (status === 'help') {
-                    await AlertService.createAlert({
-                        title: `SOS: Help request from ${user.displayName || 'a user'}`,
-                        description: `A user has requested immediate assistance. Check the Community Map for their location.`,
-                        severity: 'Critical',
-                        type: 'Other',
-                        affectedAreas: ['User Location'], // Generic area for SOS
-                        createdBy: user.uid,
-                    })
-                }
-
-                toast({
-                    title: "Status Updated",
-                    description: `You've been marked as ${status === 'safe' ? 'safe' : 'needing help'}. ${location ? 'Your location has been shared.' : ''}`,
-                });
-            } catch (error) {
-                console.error("Error updating status: ", error);
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Could not update your status. Please try again.",
-                });
-            } finally {
-                setIsSubmitting(null);
-                resolve();
-            }
-        };
-
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            submitStatus(new GeoPoint(latitude, longitude));
-          },
-          (error) => {
-            console.warn("Could not get location: ", error.message);
-            toast({
-              variant: "destructive",
-              title: "Location Error",
-              description: "Could not get your location. Submitting status without location data.",
+    try {
+        let alertId: string | null = null;
+        // For 'help' status, create the alert immediately for speed.
+        if (status === 'help') {
+            alertId = await AlertService.createAlert({
+                title: `SOS: Help request from ${user.displayName || 'a user'}`,
+                description: `A user has requested immediate assistance. Their location is being fetched.`,
+                severity: 'Critical',
+                type: 'Other',
+                affectedAreas: [], // Will be updated with location later if possible
+                createdBy: user.uid,
             });
-            // Proceed without location
-            submitStatus(undefined);
+        }
+        
+        // Now, get location and update statuses/alerts.
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            const geoPoint = new GeoPoint(latitude, longitude);
+
+            // Update the user's own status document
+            await updateUserStatus({
+                userId: user.uid,
+                userName: user.displayName || 'Anonymous',
+                userAvatarUrl: user.photoURL || undefined,
+                status,
+                location: geoPoint,
+                timestamp: serverTimestamp(),
+            });
+
+            // If it was a help request, update the alert with location info
+            if (status === 'help' && alertId) {
+                await AlertService.updateAlert(alertId, { 
+                    description: `A user has requested immediate assistance at the location marked on the map.`,
+                    affectedAreas: [`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`]
+                });
+            }
+            
+            toast({
+                title: "Status Updated",
+                description: `You've been marked as ${status}. Your location has been shared.`,
+            });
+            setIsSubmitting(null);
+
+          },
+          async (error) => {
+            console.warn("Could not get location: ", error.message);
+            // Still update status, just without location
+             await updateUserStatus({
+                userId: user.uid,
+                userName: user.displayName || 'Anonymous',
+                userAvatarUrl: user.photoURL || undefined,
+                status,
+                timestamp: serverTimestamp(),
+            });
+            toast({
+              title: "Status Updated",
+              description: `You've been marked as ${status}. Your location could not be shared.`,
+              variant: "default",
+            });
+             setIsSubmitting(null);
           },
           {
               enableHighAccuracy: true,
-              timeout: 5000,
+              timeout: 10000, // Increased timeout for better location accuracy
               maximumAge: 0
           }
         );
-    });
+    } catch (error) {
+        console.error("Error updating status: ", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not update your status. Please try again.",
+        });
+        setIsSubmitting(null);
+    }
   };
 
   return { isSubmitting, handleStatusUpdate };

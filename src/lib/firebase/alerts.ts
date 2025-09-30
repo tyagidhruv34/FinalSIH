@@ -1,6 +1,6 @@
 
 import { db } from './firebase';
-import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import type { Alert } from '@/lib/types';
 
 // Service class for handling Firestore operations for alerts
@@ -18,6 +18,17 @@ export class AlertService {
     } catch (error) {
       console.error("Error creating alert: ", error);
       throw new Error("Failed to create alert.");
+    }
+  }
+  
+  // Update an existing alert
+  static async updateAlert(alertId: string, dataToUpdate: Partial<Alert>): Promise<void> {
+    try {
+        const alertDocRef = doc(db, 'alerts', alertId);
+        await updateDoc(alertDocRef, dataToUpdate);
+    } catch (error) {
+        console.error("Error updating alert: ", error);
+        throw new Error("Failed to update alert.");
     }
   }
 

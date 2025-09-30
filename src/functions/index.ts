@@ -41,30 +41,64 @@ export const translateAndNotify = onDocumentCreated("alerts/{alertId}", async (e
   const alertData = snapshot.data();
   const { title, description, severity, createdBy } = alertData;
 
-  // --- Send Push Notification for Admin-created alerts ---
-  // We check if the title and description exist. This is a proxy for "admin-created" vs "SOS".
-  if(title && description) {
-    const topic = "all_users"; 
-    const message = {
+  // --- Send Push Notification ---
+  const topic = "all_users"; 
+  let message;
+
+  // Check if the title starts with 'SOS:' which indicates a user-triggered alert
+  if(title && title.startsWith('SOS:')) {
+    message = {
+      notification: {
+        title: `🔴 CRITICAL SOS: ${title.replace('SOS: ', '')}`,
+        body: description,
+      },
+      android: {
+        priority: "high",
+        notification: {
+          sound: "default",
+          channelId: "sos_channel", // A high-priority channel
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "default",
+            critical: 1, // Marks the notification as critical on iOS
+          },
+        },
+      },
+      topic: topic,
+    };
+    logger.log(`Sending critical SOS notification for alert ${alertId}`);
+  } else if (title && description) {
+    // This is for admin-created alerts
+    message = {
       notification: {
         title: `🚨 ${severity || 'New'} Alert: ${title}`,
         body: description,
       },
       topic: topic,
     };
+    logger.log(`Sending general admin notification for alert ${alertId}`);
+  } else {
+    // If no title/description, don't send a notification yet.
+    // The alert will be updated with more info, which could trigger another function if needed.
+    logger.log(`Alert ${alertId} has no title/description. Skipping notification.`);
+  }
 
+  if (message) {
     try {
       const response = await getMessaging().send(message);
-      logger.log("Successfully sent general notification:", response);
+      logger.log("Successfully sent notification:", response);
     } catch (error) {
-      logger.error("Error sending general notification:", error);
+      logger.error("Error sending notification:", error);
     }
   }
 
 
   // --- Translate Alert (if applicable) ---
-  if (!title || !description) {
-    logger.log(`Alert ${alertId} is an automated SOS or has no title/description. Skipping translation.`);
+  if (!title || !description || title.startsWith('SOS:')) {
+    logger.log(`Alert ${alertId} is an automated SOS or has no translatable content. Skipping translation.`);
     return;
   }
 
