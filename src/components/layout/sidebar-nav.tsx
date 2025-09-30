@@ -9,26 +9,27 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useLanguage } from "@/hooks/use-language";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
-  { href: "/rescue", label: "Rescue Dashboard", icon: "LifeBuoy" },
-  { href: "/learning-hub", label: "Learning Hub", icon: "GraduationCap" },
-  { href: "/survivor-community", label: "Survivor Stories", icon: "HeartHandshake" },
-  { href: "/damage-assessment", label: "Damage Assessment", icon: "Bot" },
-  { href: "/risk-assessment", label: "Risk Assessment", icon: "ShieldAlert" },
-  { href: "/missing-person-report", label: "Report Missing", icon: "PersonStanding" },
-  { href: "/missing-person-finder", label: "Find Person", icon: "Search" },
-  { href: "/advisories", label: "Advisories", icon: "Landmark" },
-  { href: "/status-updates", label: "Status Updates", icon: "MessageSquare" },
-  { href: "/resource-locator", label: "Resource Locator", icon: "MapPin" },
-  { href: "/emergency-contacts", label: "Emergency Contacts", icon: "Phone" },
+  { href: "/", label: "nav_dashboard", icon: "LayoutDashboard" },
+  { href: "/rescue", label: "nav_rescue_dashboard", icon: "LifeBuoy" },
+  { href: "/learning-hub", label: "nav_learning_hub", icon: "GraduationCap" },
+  { href: "/survivor-community", label: "nav_survivor_stories", icon: "HeartHandshake" },
+  { href: "/damage-assessment", label: "nav_damage_assessment", icon: "Bot" },
+  { href: "/risk-assessment", label: "nav_risk_assessment", icon: "ShieldAlert" },
+  { href: "/missing-person-report", label: "nav_report_missing", icon: "PersonStanding" },
+  { href: "/missing-person-finder", label: "nav_find_person", icon: "Search" },
+  { href: "/advisories", label: "nav_advisories", icon: "Landmark" },
+  { href: "/status-updates", label: "nav_status_updates", icon: "MessageSquare" },
+  { href: "/resource-locator", label: "nav_resource_locator", icon: "MapPin" },
+  { href: "/emergency-contacts", label: "nav_emergency_contacts", icon: "Phone" },
 ];
 
 const secondaryNavItems = [
-    { href: "/settings", label: "Settings", icon: "Settings" },
-    { href: "/admin", label: "Admin", icon: "ShieldCheck" },
-    { href: "/feedback", label: "Feedback", icon: "Megaphone" },
+    { href: "/settings", label: "nav_settings", icon: "Settings" },
+    { href: "/admin", label: "nav_admin", icon: "ShieldCheck" },
+    { href: "/feedback", label: "nav_feedback", icon: "Megaphone" },
 ]
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
@@ -43,6 +44,7 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
 export default function SidebarNav() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <nav className="hidden md:block w-64 border-r bg-sidebar text-sidebar-foreground">
@@ -51,7 +53,7 @@ export default function SidebarNav() {
                 <Link href="/" className="flex items-center gap-2.5 font-semibold">
                     <icons.ShieldAlert className="h-7 w-7 text-primary" />
                     <span className="text-xl font-bold tracking-tight text-sidebar-foreground">
-                        Aapda Guide
+                        {t('app_title')}
                     </span>
                 </Link>
             </div>
@@ -69,7 +71,7 @@ export default function SidebarNav() {
                                 )}
                             >
                                 <LucideIcon name={item.icon} className="h-4 w-4" />
-                                <span>{item.label}</span>
+                                <span>{t(item.label as any)}</span>
                             </Link>
                         </li>
                     ))}
@@ -88,7 +90,7 @@ export default function SidebarNav() {
                                 )}
                             >
                                 <LucideIcon name={item.icon} className="h-4 w-4" />
-                                <span>{item.label}</span>
+                                <span>{t(item.label as any)}</span>
                             </Link>
                         </li>
                     ))}
@@ -111,7 +113,7 @@ export default function SidebarNav() {
                     </div>
                 ) : (
                 <Button asChild className="w-full">
-                    <Link href="/login">Login</Link>
+                    <Link href="/login">{t('header_login')}</Link>
                 </Button>
                 )}
             </div>

@@ -35,24 +35,29 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useStatusUpdater } from "@/hooks/use-status-updater";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: "LayoutDashboard" },
-  { href: "/rescue", label: "Rescue Dashboard", icon: "LifeBuoy" },
-  { href: "/learning-hub", label: "Learning Hub", icon: "GraduationCap" },
-  { href: "/survivor-community", label: "Survivor Stories", icon: "HeartHandshake" },
-  { href: "/damage-assessment", label: "Damage Assessment", icon: "Bot" },
-  { href: "/risk-assessment", label: "Risk Assessment", icon: "ShieldAlert" },
-  { href: "/missing-person-report", label: "Report Missing", icon: "PersonStanding" },
-  { href: "/missing-person-finder", label: "Find Person", icon: "Search" },
-  { href: "/advisories", label: "Advisories", icon: "Landmark" },
-  { href: "/status-updates", label: "Status Updates", icon: "MessageSquare" },
-  { href: "/resource-locator", label: "Resource Locator", icon: "MapPin" },
-  { href: "/emergency-contacts", label: "Emergency Contacts", icon: "Phone" },
-  { href: "/settings", label: "Settings", icon: "Settings" },
-  { href: "/admin", label: "Admin", icon: "ShieldCheck" },
-  { href: "/feedback", label: "Feedback", icon: "Megaphone" },
+  { href: "/", label: "nav_dashboard", icon: "LayoutDashboard" },
+  { href: "/rescue", label: "nav_rescue_dashboard", icon: "LifeBuoy" },
+  { href: "/learning-hub", label: "nav_learning_hub", icon: "GraduationCap" },
+  { href: "/survivor-community", label: "nav_survivor_stories", icon: "HeartHandshake" },
+  { href: "/damage-assessment", label: "nav_damage_assessment", icon: "Bot" },
+  { href: "/risk-assessment", label: "nav_risk_assessment", icon: "ShieldAlert" },
+  { href: "/missing-person-report", label: "nav_report_missing", icon: "PersonStanding" },
+  { href: "/missing-person-finder", label: "nav_find_person", icon: "Search" },
+  { href: "/advisories", label: "nav_advisories", icon: "Landmark" },
+  { href: "/status-updates", label: "nav_status_updates", icon: "MessageSquare" },
+  { href: "/resource-locator", label: "nav_resource_locator", icon: "MapPin" },
+  { href: "/emergency-contacts", label: "nav_emergency_contacts", icon: "Phone" },
 ];
+
+const secondaryNavItems = [
+    { href: "/settings", label: "nav_settings", icon: "Settings" },
+    { href: "/admin", label: "nav_admin", icon: "ShieldCheck" },
+    { href: "/feedback", label: "nav_feedback", icon: "Megaphone" },
+]
+
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
   const Icon = icons[name as keyof typeof icons];
@@ -68,6 +73,7 @@ export default function Header() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
+  const { t } = useLanguage();
 
   const handleSignOut = async () => {
     await signOut();
@@ -94,18 +100,18 @@ export default function Header() {
                 <div className="flex items-center gap-2.5 p-4 border-b border-sidebar-border">
                   <icons.ShieldAlert className="h-7 w-7 text-primary" />
                   <span className="text-xl font-bold tracking-tight">
-                    Aapda Guide
+                    {t('app_title')}
                   </span>
                 </div>
                 <nav className="flex-1 space-y-1 p-2">
-                  {navItems.map((item) => (
+                  {[...navItems, ...secondaryNavItems].map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold' : 'font-medium'}`}
                     >
                       <LucideIcon name={item.icon} className="h-4 w-4" />
-                      {item.label}
+                      {t(item.label as any)}
                     </Link>
                   ))}
                 </nav>
@@ -123,19 +129,19 @@ export default function Header() {
               ) : (
                 <icons.Siren className="mr-2 h-5 w-5" />
               )}
-                SOS
+                {t('header_sos')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure you want to send an SOS?</AlertDialogTitle>
+              <AlertDialogTitle>{t('header_sos_confirm_title')}</AlertDialogTitle>
               <AlertDialogDescription>
-                This action will immediately mark your status as "Need Help" and share your location on the community map for rescue and coordination purposes.
+                {t('header_sos_confirm_description')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleSos}>Yes, I need help</AlertDialogAction>
+              <AlertDialogCancel>{t('header_sos_confirm_cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleSos}>{t('header_sos_confirm_action')}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -164,18 +170,18 @@ export default function Header() {
               <DropdownMenuItem asChild>
                 <Link href="/profile">
                   <LucideIcon name="User" className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                  <span>{t('header_profile')}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSignOut}>
                 <LucideIcon name="LogOut" className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>{t('header_logout')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
           <Button asChild>
-            <Link href="/login">Login</Link>
+            <Link href="/login">{t('header_login')}</Link>
           </Button>
         )}
       </div>
