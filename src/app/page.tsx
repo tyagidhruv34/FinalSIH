@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Clock, Map, ListFilter, ServerCrash, Users, LifeBuoy, Truck } from "lucide-react";
+import { Clock, Map, ListFilter, ServerCrash, Users, LifeBuoy, Truck, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Alert, UserStatus } from '@/lib/types';
+import type { Alert, UserStatus, Resource } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,13 @@ import Link from 'next/link';
 import { Building2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
+import dynamic from 'next/dynamic';
+
+const ResourceMap = dynamic(() => import('@/components/resource-map'), { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[300px] w-full rounded-lg" />
+});
+
 
 const severityStyles: { [key in Alert['severity']]: string } = {
   "Critical": "border-accent text-accent-foreground bg-accent/10",
@@ -49,6 +57,9 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const userSosAlert = user ? alerts.find(a => a.createdBy === user.uid && a.severity === 'Critical' && a.rescueStatus !== 'Completed') : undefined;
+  
+  const [sosLocation, setSosLocation] = useState<[number, number] | null>(null);
+  const [sosUserStatus, setSosUserStatus] = useState<UserStatus | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -63,7 +74,6 @@ export default function DashboardPage() {
         const fetchedAlertsPromises: Promise<Alert>[] = querySnapshot.docs.map(async (docSnapshot) => {
             let alertData = docSnapshot.data() as Alert;
             
-            // If language is not English, try to fetch translation
             if (language !== 'en') {
                 const translationRef = doc(db, 'alerts', docSnapshot.id, 'translations', language);
                 const translationSnap = await getDoc(translationRef);
@@ -128,6 +138,30 @@ export default function DashboardPage() {
 
   }, [language, t]);
 
+  useEffect(() => {
+    if (userSosAlert) {
+      const area = userSosAlert.affectedAreas.find(a => a.startsWith('Lat:'));
+      if (area) {
+        const parts = area.split(', ');
+        const lat = parseFloat(parts[0].replace('Lat: ', ''));
+        const lon = parseFloat(parts[1].replace('Lon: ', ''));
+        setSosLocation([lat, lon]);
+        
+        // Find the matching user_status to show on map
+        const userStatusQuery = query(collection(db, 'user_status'), where('userId', '==', userSosAlert.createdBy), where('status', '==', 'help'));
+        const unsubscribe = onSnapshot(userStatusQuery, (snapshot) => {
+            if (!snapshot.empty) {
+                setSosUserStatus(snapshot.docs[0].data() as UserStatus);
+            }
+        });
+        return () => unsubscribe();
+      }
+    } else {
+      setSosLocation(null);
+      setSosUserStatus(null);
+    }
+  }, [userSosAlert]);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -151,25 +185,45 @@ export default function DashboardPage() {
                     {t('dashboard_sos_status_title')}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-                <p className="text-lg font-semibold">
-                    {userSosAlert.acknowledged ? 
-                     t('dashboard_sos_status_acknowledged').replace('{status}', userSosAlert.rescueStatus || 'Acknowledged') :
-                     t('dashboard_sos_status_awaiting')}
-                </p>
-                <p className="text-muted-foreground mt-1">
-                    {userSosAlert.acknowledged ? 
-                     t('dashboard_sos_status_dispatched_desc') : 
-                     t('dashboard_sos_status_awaiting_desc')}
-                </p>
+            <CardContent className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold">
+                      {userSosAlert.acknowledged ? 
+                       t('dashboard_sos_status_acknowledged').replace('{status}', userSosAlert.rescueStatus || 'Acknowledged') :
+                       t('dashboard_sos_status_awaiting')}
+                  </p>
+                  <p className="text-muted-foreground mt-1">
+                      {userSosAlert.acknowledged ? 
+                       t('dashboard_sos_status_dispatched_desc') : 
+                       t('dashboard_sos_status_awaiting_desc')}
+                  </p>
+                </div>
+
                 {userSosAlert.rescueTeam && (
-                    <div className="flex items-center gap-4 pt-2 border-t border-blue-200 dark:border-blue-700">
+                    <div className="flex items-center gap-4 pt-3 border-t border-blue-200 dark:border-blue-700">
                         <Truck className="h-6 w-6 text-blue-600 dark:text-blue-400"/>
                         <div>
                             <p className="font-semibold">{t('dashboard_sos_rescue_team_title').replace('{team}', userSosAlert.rescueTeam)}</p>
                             {userSosAlert.eta && <p className="text-sm text-muted-foreground">{t('dashboard_sos_rescue_team_eta').replace('{eta}', userSosAlert.eta)}</p>}
                         </div>
                     </div>
+                )}
+                
+                {sosLocation && sosUserStatus && (
+                  <div className="pt-3 border-t border-blue-200 dark:border-blue-700">
+                      <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                          <MapPin className="h-4 w-4"/>
+                          Your SOS Location
+                      </h4>
+                      <ResourceMap
+                          resources={[]} 
+                          userStatuses={sosUserStatus ? [sosUserStatus] : []} 
+                          resourceNeeds={[]}
+                          damageReports={[]}
+                          center={sosLocation}
+                          zoom={14}
+                      />
+                  </div>
                 )}
             </CardContent>
           </Card>
