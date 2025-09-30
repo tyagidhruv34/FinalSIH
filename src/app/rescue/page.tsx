@@ -4,15 +4,14 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
-import type { UserStatus, DamageReport, Resource } from '@/lib/types';
+import type { Alert, DamageReport, Resource } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
-import { AlertTriangle, Building, LifeBuoy, MapPin } from 'lucide-react';
+import { AlertTriangle, Building, LifeBuoy, MapPin, User } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { resources } from '@/lib/data';
@@ -35,7 +34,7 @@ export default function RescueDashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   
-  const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
+  const [sosAlerts, setSosAlerts] = useState<Alert[]>([]);
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,18 +47,18 @@ export default function RescueDashboardPage() {
 
     setLoading(true);
 
-    const helpRequestQuery = query(
-        collection(db, 'user_status'), 
-        where('status', '==', 'help'),
+    const sosAlertsQuery = query(
+        collection(db, 'alerts'), 
+        where('severity', '==', 'Critical'),
         orderBy('timestamp', 'desc')
     );
 
-    const unsubscribeHelp = onSnapshot(helpRequestQuery, (snapshot) => {
-        const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserStatus));
-        setHelpRequests(requests);
+    const unsubscribeSosAlerts = onSnapshot(sosAlertsQuery, (snapshot) => {
+        const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert));
+        setSosAlerts(alerts);
         setLoading(false);
     }, (err) => {
-        console.error("Error fetching help requests:", err);
+        console.error("Error fetching SOS alerts:", err);
         setLoading(false);
     });
 
@@ -76,7 +75,7 @@ export default function RescueDashboardPage() {
     });
 
     return () => {
-      unsubscribeHelp();
+      unsubscribeSosAlerts();
       unsubscribeDamage();
     };
   }, [user, authLoading, router]);
@@ -89,8 +88,8 @@ export default function RescueDashboardPage() {
     return null;
   }
   
-  const mapCenter = helpRequests.length > 0 && helpRequests[0].location
-    ? [helpRequests[0].location.latitude, helpRequests[0].location.longitude] as [number, number]
+  const mapCenter = sosAlerts.length > 0 && sosAlerts[0].affectedAreas[0]?.startsWith('Lat:')
+    ? [parseFloat(sosAlerts[0].affectedAreas[0].split(', ')[0].replace('Lat: ', '')), parseFloat(sosAlerts[0].affectedAreas[0].split(', ')[1].replace('Lon: ', ''))] as [number, number]
     : damageReports.length > 0 && damageReports[0].location
     ? [damageReports[0].location.latitude, damageReports[0].location.longitude] as [number, number]
     : [28.6139, 77.2090] as [number, number];
@@ -115,7 +114,7 @@ export default function RescueDashboardPage() {
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{helpRequests.length}</div>
+            <div className="text-2xl font-bold text-destructive">{sosAlerts.length}</div>
             <p className="text-xs text-muted-foreground">
               Users actively requesting help.
             </p>
@@ -150,28 +149,27 @@ export default function RescueDashboardPage() {
                                     <TableHead>User</TableHead>
                                     <TableHead>Time</TableHead>
                                     <TableHead>Location</TableHead>
+                                    <TableHead>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {helpRequests.map(req => (
-                                    <TableRow key={req.id}>
+                                {sosAlerts.map(alert => (
+                                    <TableRow key={alert.id}>
                                         <TableCell className="font-medium">
                                             <div className="flex items-center gap-2">
-                                                <Avatar className="h-8 w-8">
-                                                    <AvatarImage src={req.userAvatarUrl} />
-                                                    <AvatarFallback>{req.userName.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                {req.userName}
+                                                <User className="h-6 w-6" />
+                                                {alert.title.replace('SOS: Help request from ', '')}
                                             </div>
                                         </TableCell>
-                                        <TableCell>{req.timestamp ? formatDistanceToNow(req.timestamp.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
-                                        <TableCell>{req.location ? 'Available' : 'N/A'}</TableCell>
+                                        <TableCell>{alert.timestamp ? formatDistanceToNow(alert.timestamp.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
+                                        <TableCell>{alert.affectedAreas.join(', ')}</TableCell>
+                                        <TableCell><Badge variant={alert.acknowledged ? 'secondary' : 'destructive'}>{alert.acknowledged ? alert.rescueStatus || 'Acknowledged' : 'New'}</Badge></TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </div>
-                    {helpRequests.length === 0 && <p className="text-center text-muted-foreground py-4">No active SOS requests.</p>}
+                    {sosAlerts.length === 0 && <p className="text-center text-muted-foreground py-4">No active SOS requests.</p>}
                 </CardContent>
             </Card>
             <Card>
@@ -224,7 +222,7 @@ export default function RescueDashboardPage() {
                 <CardContent>
                      <ResourceMap 
                         resources={resources as Resource[]} 
-                        userStatuses={helpRequests} 
+                        userStatuses={[]} 
                         resourceNeeds={[]} 
                         damageReports={damageReports}
                         center={mapCenter}
@@ -237,5 +235,3 @@ export default function RescueDashboardPage() {
     </div>
   );
 }
-
-    
