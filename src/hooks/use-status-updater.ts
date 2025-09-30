@@ -8,6 +8,28 @@ import { updateUserStatus } from '@/lib/firebase/status';
 import { GeoPoint, serverTimestamp } from 'firebase/firestore';
 import { AlertService } from '@/lib/firebase/alerts';
 
+// Helper function to get location with a Promise-based approach
+const getLocation = (): Promise<GeoPoint | null> => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser.');
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve(new GeoPoint(position.coords.latitude, position.coords.longitude));
+      },
+      (error) => {
+        console.warn('Could not get location: ', error.message);
+        resolve(null); // Resolve with null if there's an error or permission is denied
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  });
+};
+
+
 export function useStatusUpdater() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,18 +48,7 @@ export function useStatusUpdater() {
     setIsSubmitting(status);
 
     try {
-      const location = await new Promise<GeoPoint | null>((resolve) => {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            resolve(new GeoPoint(position.coords.latitude, position.coords.longitude));
-          },
-          (error) => {
-            console.warn('Could not get location: ', error.message);
-            resolve(null);
-          },
-          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-        );
-      });
+      const location = await getLocation();
 
       if (status === 'help') {
         const lat = location?.latitude.toFixed(4);
@@ -80,7 +91,7 @@ export function useStatusUpdater() {
         description: 'Could not update your status. Please try again.',
       });
     } finally {
-      // This will run regardless of success or failure, ensuring the button resets.
+      // This block will run regardless of success or failure, ensuring the button resets.
       setIsSubmitting(null);
     }
   };
