@@ -35,21 +35,23 @@ export const createUserProfileDocument = async (user: User, additionalData: { di
     // Use displayName from additionalData if available (for email/pass signup)
     const displayName = additionalData.displayName || user.displayName;
 
-    const userProfile: UserProfile = {
-      uid,
-      email,
-      displayName,
-      photoURL,
-      phoneNumber,
-      createdAt,
-    };
-
     try {
-      await setDoc(userRef, userProfile);
-      // If a display name was provided, update the user's auth profile too
-      if (displayName && !user.displayName) {
-          await updateProfile(user, { displayName });
-      }
+        // If a display name was provided, update the user's auth profile first
+        if (displayName && !user.displayName) {
+            await updateProfile(user, { displayName });
+        }
+        
+        // Now create the document in firestore
+        const userProfile: UserProfile = {
+            uid,
+            email,
+            displayName,
+            photoURL,
+            phoneNumber,
+            createdAt,
+        };
+        await setDoc(userRef, userProfile);
+
     } catch (error) {
       console.error("Error creating user profile", error);
     }
