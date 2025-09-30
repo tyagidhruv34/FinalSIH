@@ -36,7 +36,6 @@ import { useStatusUpdater } from "@/hooks/use-status-updater";
 import { Loader2, Mic, MicOff } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -235,5 +234,3 @@ export default function Header() {
     </header>
   );
 }
-
-    
