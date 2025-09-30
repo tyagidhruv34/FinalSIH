@@ -12,11 +12,13 @@ import { auth, signUpWithEmail, signInWithEmail } from '@/lib/firebase/auth';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function AuthForm() {
-  const { signInWithGoogle } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
   
   // States for email/password
   const [email, setEmail] = useState('');
@@ -24,11 +26,18 @@ export default function AuthForm() {
   const [displayName, setDisplayName] = useState('');
   
   const [activeTab, setActiveTab] = useState('signin');
+  
+  useEffect(() => {
+    if(user) {
+      router.push('/');
+    }
+  }, [user, router]);
 
 
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
+      router.push('/');
     } catch (error: any) {
       if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
         toast({
@@ -60,9 +69,11 @@ export default function AuthForm() {
             }
             await signUpWithEmail(email, password, displayName);
             toast({ title: 'Success!', description: 'Your account has been created.' });
+            router.push('/');
         } else {
             await signInWithEmail(email, password);
             toast({ title: 'Success!', description: 'You are now logged in.' });
+            router.push('/');
         }
     } catch (error: any) {
         let friendlyMessage = 'An unexpected error occurred.';
