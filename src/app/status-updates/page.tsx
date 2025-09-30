@@ -31,11 +31,8 @@ export default function StatusUpdatesPage() {
   
   const onStatusUpdate = async (status: 'safe' | 'help') => {
       await handleStatusUpdate(status);
-      if (status === 'help') {
-        router.push('/resource-locator');
-      } else {
-        router.push('/');
-      }
+      // Always redirect to dashboard, which will show SOS status if applicable
+      router.push('/');
   }
 
 
