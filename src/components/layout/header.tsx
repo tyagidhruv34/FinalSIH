@@ -90,7 +90,6 @@ export default function Header() {
   
   const handleSos = async () => {
     await handleStatusUpdate('help');
-    router.push('/');
   }
 
   const { isListening, isSupported, startListening, stopListening } = useVoiceRecognition({
