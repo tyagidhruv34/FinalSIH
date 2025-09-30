@@ -1,4 +1,5 @@
 
+
 import type { LucideIcon } from "lucide-react";
 import type { User as FirebaseUser, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import type { GeoPoint, Timestamp } from "firebase/firestore";
@@ -82,6 +83,19 @@ export type Feedback = {
     userId: string;
     userName: string;
     message: string;
+    timestamp: any;
+}
+
+export type SurvivorStory = {
+    id?: string;
+    userId: string;
+    userName: string;
+    userAvatarUrl?: string;
+    title: string;
+    story: string;
+    mediaUrl?: string; // For now, one image. Can be extended to an array.
+    heroName?: string;
+    heroContact?: string;
     timestamp: any;
 }
 
