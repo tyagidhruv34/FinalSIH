@@ -51,6 +51,17 @@
     "dashboard_no_help_requests": "સમુદાય તરફથી कोई સક્રિય મદદ વિનંતીઓ નથી.",
     "dashboard_user_needs_help": "મદદની જરૂર છે",
 
+    "settings_title": "સેટિંગ્સ",
+    "settings_description": "તમારી એપ્લિકેશન પસંદગીઓનું સંચાલન કરો.",
+    "settings_language_title": "ભાષા",
+    "settings_language_description": "એપ્લિકેશન ઇન્ટરફેસ માટે તમારી પસંદગીની ભાષા પસંદ કરો.",
+    "settings_language_placeholder": "ભાષા પસંદ કરો",
+    "settings_save_button": "પસંદગીઓ સાચવો",
+    "settings_alerts_title": "ચેતવણી પસંદગીઓ",
+    "settings_alerts_description": "તમે કયા સત્તાવાર સ્ત્રોતો પાસેથી ચેતવણીઓ પ્રાપ્ત કરવા માંગો છો તે પસંદ કરો. AI તમારા પસંદ કરેલા સ્ત્રોતોમાંથી માહિતીને પ્રાથમિકતા આપશે.",
+    "settings_save_success_title": "પસંદગીઓ સાચવવામાં આવી",
+    "settings_save_success_description": "તમારી સેટિંગ્સ અપડેટ કરવામાં આવી છે.",
+
     "error_failed_to_load_title": "ડેટા લોડ કરવામાં નિષ્ફળ",
     "error_failed_to_load_alerts": "ચેતવણીઓ લોડ કરવામાં નિષ્ફળ.",
     "error_failed_to_load_community_requests": "સમુદાય મદદ વિનંતીઓ લોડ કરવામાં નિષ્ફળ."

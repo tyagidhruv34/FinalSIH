@@ -51,6 +51,17 @@
     "dashboard_no_help_requests": "சமூகத்திலிருந்து செயலில் உதவி கோரிக்கைகள் எதுவும் இல்லை.",
     "dashboard_user_needs_help": "உதவி தேவை",
 
+    "settings_title": "அமைப்புகள்",
+    "settings_description": "உங்கள் பயன்பாட்டு விருப்பங்களை நிர்வகிக்கவும்.",
+    "settings_language_title": "மொழி",
+    "settings_language_description": "பயன்பாட்டு இடைமுகத்திற்கு உங்கள் விருப்பமான மொழியைத் தேர்ந்தெடுக்கவும்.",
+    "settings_language_placeholder": "ஒரு மொழியைத் தேர்ந்தெடுக்கவும்",
+    "settings_save_button": "விருப்பங்களைச் சேமி",
+    "settings_alerts_title": "எச்சரிக்கை விருப்பத்தேர்வுகள்",
+    "settings_alerts_description": "நீங்கள் எந்த அதிகாரப்பூர்வ மூலங்களிலிருந்து எச்சரிக்கைகளைப் பெற விரும்புகிறீர்கள் என்பதைத் தேர்வுசெய்க. AI உங்கள் தேர்ந்தெடுக்கப்பட்ட மூலங்களிலிருந்து தகவல்களுக்கு முன்னுரிமை அளிக்கும்.",
+    "settings_save_success_title": "விருப்பத்தேர்வுகள் சேமிக்கப்பட்டன",
+    "settings_save_success_description": "உங்கள் அமைப்புகள் புதுப்பிக்கப்பட்டுள்ளன.",
+
     "error_failed_to_load_title": "தரவை ஏற்ற முடியவில்லை",
     "error_failed_to_load_alerts": "எச்சரிக்கைகளை ஏற்ற முடியவில்லை.",
     "error_failed_to_load_community_requests": "சமூக உதவி கோரிக்கைகளை ஏற்ற முடியவில்லை."

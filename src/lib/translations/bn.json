@@ -51,6 +51,17 @@
     "dashboard_no_help_requests": "সম্প্রদায় থেকে কোন সক্রিয় সাহায্যের অনুরোধ নেই।",
     "dashboard_user_needs_help": "সাহায্য প্রয়োজন",
 
+    "settings_title": "সেটিংস",
+    "settings_description": "আপনার অ্যাপ্লিকেশন পছন্দগুলি পরিচালনা করুন।",
+    "settings_language_title": "ভাষা",
+    "settings_language_description": "অ্যাপ্লিকেশন ইন্টারফেসের জন্য আপনার পছন্দের ভাষা নির্বাচন করুন।",
+    "settings_language_placeholder": "একটি ভাষা নির্বাচন করুন",
+    "settings_save_button": "পছন্দগুলি সংরক্ষণ করুন",
+    "settings_alerts_title": "সতর্কতা পছন্দ",
+    "settings_alerts_description": "আপনি কোন অফিসিয়াল উত্স থেকে সতর্কতা পেতে চান তা চয়ন করুন। AI আপনার নির্বাচিত উত্স থেকে তথ্যকে অগ্রাধিকার দেবে।",
+    "settings_save_success_title": "পছন্দগুলি সংরক্ষিত হয়েছে",
+    "settings_save_success_description": "আপনার সেটিংস আপডেট করা হয়েছে।",
+
     "error_failed_to_load_title": "ডেটা লোড করতে ব্যর্থ",
     "error_failed_to_load_alerts": "সতর্কতা লোড করতে ব্যর্থ।",
     "error_failed_to_load_community_requests": "קהילה ಸಹಾಯ অনুরোধ લોડ કરવા નિષ્ફળ."

@@ -35,36 +35,36 @@ const supportedLanguages = [
 
 
 export default function SettingsPage() {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { toast } = useToast();
 
   const handleSave = () => {
     toast({
-      title: "Preferences Saved",
-      description: "Your settings have been updated.",
+      title: t('settings_save_success_title'),
+      description: t('settings_save_success_description'),
     });
   };
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('settings_title')}</h1>
         <p className="text-muted-foreground">
-          Manage your application preferences.
+          {t('settings_description')}
         </p>
       </div>
       
        <Card>
         <CardHeader>
-          <CardTitle>Language</CardTitle>
+          <CardTitle>{t('settings_language_title')}</CardTitle>
           <CardDescription>
-            Select your preferred language for the application interface.
+            {t('settings_language_description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
             <Select value={language} onValueChange={(value) => setLanguage(value as any)}>
                 <SelectTrigger className="w-[280px]">
-                    <SelectValue placeholder="Select a language" />
+                    <SelectValue placeholder={t('settings_language_placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
                     {supportedLanguages.map(lang => (
@@ -74,15 +74,15 @@ export default function SettingsPage() {
             </Select>
         </CardContent>
          <CardFooter>
-          <Button onClick={handleSave}>Save Preferences</Button>
+          <Button onClick={handleSave}>{t('settings_save_button')}</Button>
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Alert Preferences</CardTitle>
+          <CardTitle>{t('settings_alerts_title')}</CardTitle>
           <CardDescription>
-            Choose the official sources you want to receive alerts from. The AI will prioritize information from your selected sources.
+            {t('settings_alerts_description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -101,7 +101,7 @@ export default function SettingsPage() {
           ))}
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSave}>Save Preferences</Button>
+          <Button onClick={handleSave}>{t('settings_save_button')}</Button>
         </CardFooter>
       </Card>
     </div>

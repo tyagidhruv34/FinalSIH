@@ -51,6 +51,17 @@
     "dashboard_no_help_requests": "समुदायाकडून कोणत्याही सक्रिय मदत विनंत्या नाहीत.",
     "dashboard_user_needs_help": "मदत हवी आहे",
 
+    "settings_title": "सेटिंग्ज",
+    "settings_description": "तुमचे अर्ज प्राधान्ये व्यवस्थापित करा.",
+    "settings_language_title": "भाषा",
+    "settings_language_description": "अर्ज इंटरफेससाठी तुमची प्राधान्याची भाषा निवडा.",
+    "settings_language_placeholder": "एक भाषा निवडा",
+    "settings_save_button": "प्राधान्ये जतन करा",
+    "settings_alerts_title": "सूचना प्राधान्ये",
+    "settings_alerts_description": "तुम्ही कोणत्या अधिकृत स्त्रोतांकडून सूचना प्राप्त करू इच्छिता ते निवडा. AI तुमच्या निवडलेल्या स्त्रोतांकडून माहितीला प्राधान्य देईल.",
+    "settings_save_success_title": "प्राधान्ये जतन केली",
+    "settings_save_success_description": "तुमची सेटिंग्ज अद्यतनित केली आहेत.",
+
     "error_failed_to_load_title": "डेटा लोड करण्यात अयशस्वी",
     "error_failed_to_load_alerts": "सूचना लोड करण्यात अयशस्वी.",
     "error_failed_to_load_community_requests": "समुदाय मदत विनंत्या लोड करण्यात अयशस्वी."

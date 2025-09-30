@@ -8,7 +8,7 @@
     "nav_report_missing": "ಕಾಣೆಯಾದವರನ್ನು ವರದಿ ಮಾಡಿ",
     "nav_find_person": "ವ್ಯಕ್ತಿಯನ್ನು ಹುಡುಕಿ",
     "nav_advisories": "ಸಲಹೆಗಳು",
-    "nav_status_updates": "ಸ್ಥితి ನವೀಕರಣಗಳು",
+    "nav_status_updates": "ಸ್ಥಿತಿ ನವೀಕರಣಗಳು",
     "nav_resource_locator": "ಸಂಪನ್ಮೂಲ ಲೊಕೇಟರ್",
     "nav_emergency_contacts": "ತುರ್ತು ಸಂಪರ್ಕಗಳು",
     "nav_settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
@@ -51,7 +51,18 @@
     "dashboard_no_help_requests": "ಸಮುದಾಯದಿಂದ ಯಾವುದೇ સജീവ ಸಹಾಯ ವಿನಂತಿಗಳಿಲ್ಲ.",
     "dashboard_user_needs_help": "ಸಹಾಯ ಬೇಕು",
 
+    "settings_title": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "settings_description": "ನಿಮ್ಮ ಅಪ್ಲಿಕೇಶನ್ ಆದ್ಯತೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ.",
+    "settings_language_title": "ಭಾಷೆ",
+    "settings_language_description": "ಅಪ್ಲಿಕೇಶನ್ ಇಂಟರ್ಫೇಸ್ಗಾಗಿ ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
+    "settings_language_placeholder": "ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "settings_save_button": "ಆದ್ಯತೆಗಳನ್ನು ಉಳಿಸಿ",
+    "settings_alerts_title": "ಎಚ್ಚರಿಕೆ ಆದ್ಯತೆಗಳು",
+    "settings_alerts_description": "ನೀವು ಯಾವ ಅಧಿಕೃತ ಮೂಲಗಳಿಂದ ಎಚ್ಚರಿಕೆಗಳನ್ನು ಸ್ವೀಕರಿಸಲು ಬಯಸುತ್ತೀರಿ ಎಂಬುದನ್ನು ಆರಿಸಿ. AI ನಿಮ್ಮ ಆಯ್ಕೆಮಾಡಿದ ಮೂಲಗಳಿಂದ ಮಾಹಿತಿಗೆ ಆದ್ಯತೆ ನೀಡುತ್ತದೆ.",
+    "settings_save_success_title": "ಆದ್ಯತೆಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ",
+    "settings_save_success_description": "ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ.",
+
     "error_failed_to_load_title": "ಡೇಟಾ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
-    "error_failed_to_load_alerts": "ಎಚ್ಚರಿಕೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫലವಾಗಿದೆ.",
+    "error_failed_to_load_alerts": "ಎಚ್ಚರಿಕೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ.",
     "error_failed_to_load_community_requests": "ಸಮುದಾಯ ಸಹಾಯ ವಿನಂತಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ."
 }

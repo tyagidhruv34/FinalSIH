@@ -51,6 +51,17 @@
     "dashboard_no_help_requests": "సంఘం నుండి క్రియాశీల సహాయ అభ్యర్థనలు ఏవీ లేవు.",
     "dashboard_user_needs_help": "సహాయం కావాలి",
 
+    "settings_title": "సెట్టింగ్‌లు",
+    "settings_description": "మీ అప్లికేషన్ ప్రాధాన్యతలను నిర్వహించండి.",
+    "settings_language_title": "భాష",
+    "settings_language_description": "అప్లికేషన్ ఇంటర్‌ఫేస్ కోసం మీ ఇష్టపడే భాషను ఎంచుకోండి.",
+    "settings_language_placeholder": "ఒక భాషను ఎంచుకోండి",
+    "settings_save_button": "ప్రాధాన్యతలను సేవ్ చేయండి",
+    "settings_alerts_title": "హెచ్చరిక ప్రాధాన్యతలు",
+    "settings_alerts_description": "మీరు ఏ అధికారిక మూలాల నుండి హెచ్చరికలను స్వీకరించాలనుకుంటున్నారో ఎంచుకోండి. AI మీ ఎంచుకున్న మూలాల నుండి సమాచారానికి ప్రాధాన్యత ఇస్తుంది.",
+    "settings_save_success_title": "ప్రాధాన్యతలు సేవ్ చేయబడ్డాయి",
+    "settings_save_success_description": "మీ సెట్టింగ్‌లు నవీకరించబడ్డాయి.",
+
     "error_failed_to_load_title": "డేటా లోడ్ చేయడంలో విఫలమైంది",
     "error_failed_to_load_alerts": "హెచ్చరికలను లోడ్ చేయడంలో విఫలమైంది.",
     "error_failed_to_load_community_requests": "సంఘం సహాయ అభ్యర్థనలను లోడ్ చేయడంలో విఫలమైంది."

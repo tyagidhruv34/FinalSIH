@@ -51,6 +51,17 @@
     "dashboard_no_help_requests": "No active help requests from the community.",
     "dashboard_user_needs_help": "Needs Help",
 
+    "settings_title": "Settings",
+    "settings_description": "Manage your application preferences.",
+    "settings_language_title": "Language",
+    "settings_language_description": "Select your preferred language for the application interface.",
+    "settings_language_placeholder": "Select a language",
+    "settings_save_button": "Save Preferences",
+    "settings_alerts_title": "Alert Preferences",
+    "settings_alerts_description": "Choose the official sources you want to receive alerts from. The AI will prioritize information from your selected sources.",
+    "settings_save_success_title": "Preferences Saved",
+    "settings_save_success_description": "Your settings have been updated.",
+
     "error_failed_to_load_title": "Failed to Load Data",
     "error_failed_to_load_alerts": "Failed to load alerts.",
     "error_failed_to_load_community_requests": "Failed to load community help requests."
