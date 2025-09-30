@@ -66,6 +66,8 @@ export class AlertService {
       await updateDoc(alertDocRef, {
         acknowledged: true,
         rescueStatus: 'Dispatched',
+        rescueTeam: 'Bravo Team',
+        eta: 'approx. 30 minutes',
       });
     } catch (error) {
       console.error("Error acknowledging alert: ", error);

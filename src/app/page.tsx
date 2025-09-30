@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Clock, Map, ListFilter, ServerCrash, Users, LifeBuoy } from "lucide-react";
+import { Clock, Map, ListFilter, ServerCrash, Users, LifeBuoy, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -133,7 +133,7 @@ export default function DashboardPage() {
                     Your SOS Rescue Status
                 </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
                 <p className="text-lg font-semibold">
                     {userSosAlert.acknowledged ? 
                      `Status: ${userSosAlert.rescueStatus || 'Acknowledged'}` :
@@ -144,6 +144,15 @@ export default function DashboardPage() {
                      'A rescue team has been notified. Help is on the way.' : 
                      'Your request has been received. An admin will review it shortly.'}
                 </p>
+                {userSosAlert.rescueTeam && (
+                    <div className="flex items-center gap-4 pt-2 border-t border-blue-200 dark:border-blue-700">
+                        <Truck className="h-6 w-6 text-blue-600 dark:text-blue-400"/>
+                        <div>
+                            <p className="font-semibold">{userSosAlert.rescueTeam} is on the way.</p>
+                            {userSosAlert.eta && <p className="text-sm text-muted-foreground">Estimated arrival: {userSosAlert.eta}</p>}
+                        </div>
+                    </div>
+                )}
             </CardContent>
           </Card>
       )}

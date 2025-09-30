@@ -16,6 +16,8 @@ export type Alert = {
   createdBy: string;
   acknowledged?: boolean;
   rescueStatus?: 'Dispatched' | 'In Progress' | 'Completed' | null;
+  rescueTeam?: string;
+  eta?: string;
 };
 
 export type StatusUpdate = {
