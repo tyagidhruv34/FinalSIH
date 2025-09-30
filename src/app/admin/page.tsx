@@ -92,7 +92,9 @@ export default function AdminAlertPage() {
     // Check for admin authorization
     if (!ADMIN_USER_IDS.includes(user.uid)) {
       setIsAuthorized(false);
-      router.push('/'); // Redirect non-admins to home page
+      // We don't redirect here, we just set the state and let the render logic show an access denied message.
+      // This is better for user experience than a sudden redirect.
+      setIsLoading(false);
       return;
     }
     
@@ -164,6 +166,7 @@ export default function AdminAlertPage() {
 
   
   const onSubmit = async (data: AlertFormValues) => {
+    if (!user) return;
     setIsSubmitting(true);
     try {
         const newAlertData: Omit<Alert, 'id' | 'timestamp'> = {
