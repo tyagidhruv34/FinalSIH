@@ -13,6 +13,43 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
+import { Timestamp } from 'firebase/firestore';
+
+
+const demoStories: SurvivorStory[] = [
+  {
+    id: 'story-1',
+    userId: 'user-1',
+    userName: 'Anjali Sharma',
+    userAvatarUrl: 'https://picsum.photos/seed/demo-avatar1/40/40',
+    title: 'Rescued from the Rooftops',
+    story: 'The water rose so fast. We were trapped on our roof for what felt like days. We are so grateful for the NDRF team who spotted us and brought us to safety. Their bravery was incredible.',
+    mediaUrl: 'https://picsum.photos/seed/story1/400/300',
+    heroName: 'NDRF Team Bravo',
+    timestamp: Timestamp.fromMillis(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+  },
+  {
+    id: 'story-2',
+    userId: 'user-2',
+    userName: 'Rajesh Verma',
+    userAvatarUrl: 'https://picsum.photos/seed/demo-avatar2/40/40',
+    title: 'A Stranger\'s Kindness',
+    story: 'My shop was flooded, and I lost everything. A young man I\'d never met, Rohan, helped me salvage what I could and shared his own food and water. He didn\'t have to, but he did. He is a true hero.',
+    heroName: 'Rohan',
+    timestamp: Timestamp.fromMillis(Date.now() - 10 * 60 * 60 * 1000), // 10 hours ago
+  },
+  {
+    id: 'story-3',
+    userId: 'user-3',
+    userName: 'Priya Desai',
+    userAvatarUrl: 'https://picsum.photos/seed/demo-avatar3/40/40',
+    title: 'Community Comes Together',
+    story: 'Our entire neighborhood was cut off. But everyone came together. We pooled our resources, looked after the elderly, and kept each other\'s spirits up. It showed me the true power of community.',
+    mediaUrl: 'https://picsum.photos/seed/story3/400/300',
+    timestamp: Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+  }
+];
+
 
 export default function SurvivorCommunityPage() {
   const { user } = useAuth();
@@ -24,11 +61,15 @@ export default function SurvivorCommunityPage() {
     const fetchStories = async () => {
       try {
         setLoading(true);
+        // Using hardcoded data for demo purposes
+        // In a real scenario, you'd switch back to fetching from the service
         const fetchedStories = await SurvivorStoryService.getStories();
-        setStories(fetchedStories);
+        setStories([...demoStories, ...fetchedStories]);
         setError(null);
       } catch (err) {
-        setError('Failed to load survivor stories. Please try again later.');
+        // Fallback to demo data if fetching fails
+        setStories(demoStories);
+        setError('Could not connect to live stories. Displaying examples.');
         console.error(err);
       } finally {
         setLoading(false);
@@ -116,7 +157,7 @@ export default function SurvivorCommunityPage() {
           </div>
         )}
         {error && <p className="text-destructive text-center">{error}</p>}
-        {!loading && !error && stories.length === 0 && (
+        {!loading && stories.length === 0 && (
           <Card className="flex items-center justify-center h-64">
             <div className="text-center text-muted-foreground">
               <p>No stories have been shared yet.</p>
