@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress';
 const educationalVideos = [
   {
     title: "Earthquake Safety Video",
-    src: "https://www.youtube.com/embed/ezafP9gYF-A",
+    src: "https://www.youtube.com/embed/MllUVQM3KVk",
   },
   {
     title: "Fire Extinguisher Training Video (P.A.S.S.)",
