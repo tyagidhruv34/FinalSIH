@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -5,15 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, Film, Gamepad2, Check, X, Box, Droplets, Utensils, BriefcaseMedical, Flashlight, Radio } from "lucide-react";
+import { GraduationCap, Film, Gamepad2, Check, X, Box, Droplets, Utensils, BriefcaseMedical, Flashlight, Radio, Award, PartyPopper, Star } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 
 // To change a video, simply update the 'src' URL in the list below.
 // Make sure the URL is the "embed" version from YouTube.
 const educationalVideos = [
   {
-    title: "Earthquake Safety",
-    src: "https://www.youtube.com/embed/MllUVQM3KVk",
+    title: "Earthquake Safety Drill",
+    src: "https://www.youtube.com/embed/G3e4h52-iXI",
+  },
+  {
+    title: "How to Use a Fire Extinguisher",
+    src: "https://www.youtube.com/embed/bSAg5E4IagA",
   },
   {
     title: "Build an Emergency Kit",
@@ -23,10 +29,6 @@ const educationalVideos = [
     title: "Flood Safety",
     src: "https://www.youtube.com/embed/pi_nUPcQz_A",
   },
-  {
-    title: "Fire Safety",
-    src: "https://www.youtube.com/embed/Xgc90CoJbDI",
-  }
 ];
 
 
@@ -65,12 +67,12 @@ const quizQuestions = [
 ];
 
 const safetyKitItems = [
-    { icon: Droplets, name: "Water", description: "1 gallon per person, per day" },
-    { icon: Utensils, name: "Food", description: "Non-perishable, 3-day supply" },
-    { icon: BriefcaseMedical, name: "First-Aid Kit", description: "Bandages, antiseptic, medicines" },
-    { icon: Flashlight, name: "Flashlight", description: "With extra batteries" },
-    { icon: Radio, name: "Hand-crank Radio", description: "To get news and alerts" },
-    { icon: Box, name: "Other essentials", description: "Whistle, masks, local maps" },
+    { icon: Droplets, name: "Water", description: "1 gallon per person, per day", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300" },
+    { icon: Utensils, name: "Food", description: "Non-perishable, 3-day supply", color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300" },
+    { icon: BriefcaseMedical, name: "First-Aid Kit", description: "Bandages, antiseptic, medicines", color: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300" },
+    { icon: Flashlight, name: "Flashlight", description: "With extra batteries", color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-300" },
+    { icon: Radio, name: "Hand-crank Radio", description: "To get news and alerts", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300" },
+    { icon: Box, name: "Other essentials", description: "Whistle, masks, local maps", color: "bg-gray-100 dark:bg-gray-700/30 text-gray-600 dark:text-gray-300" },
 ];
 
 
@@ -82,13 +84,23 @@ export default function LearningHubPage() {
   const [quizFinished, setQuizFinished] = useState(false);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
+  
+  const getScoreMessage = (finalScore: number) => {
+    const percentage = (finalScore / quizQuestions.length) * 100;
+    if (percentage === 100) return { message: "Perfect Score! You're a safety superstar!", icon: Award };
+    if (percentage >= 80) return { message: "Excellent work! You really know your stuff.", icon: Star };
+    if (percentage >= 50) return { message: "Good job! A little more review and you'll be an expert.", icon: PartyPopper };
+    return { message: "Keep trying! Every question you learn makes you safer.", icon: GraduationCap };
+  };
+  
+  const finalScoreMessage = getScoreMessage(score);
 
   const handleNextQuestion = () => {
-    // Check answer and update score if it hasn't been done
-    if(showResult && selectedAnswer) {
-        if (selectedAnswer === currentQuestion.correctAnswer) {
-            setScore(prevScore => prevScore + 1);
-        }
+    // Check answer and update score
+    if (selectedAnswer === currentQuestion.correctAnswer) {
+      if(!showResult) { // Only add score if it hasn't been shown
+          setScore(prevScore => prevScore + 1);
+      }
     }
     
     setShowResult(false);
@@ -130,18 +142,18 @@ export default function LearningHubPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Film className="h-6 w-6" />
+            <Film className="h-6 w-6 text-primary" />
             <CardTitle>Safety Videos</CardTitle>
           </div>
           <CardDescription>Watch these videos to learn about disaster preparedness.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+        <CardContent className="grid gap-6 md:grid-cols-2">
           {educationalVideos.map((video) => (
-            <div key={video.title} className="space-y-2">
-              <h3 className="font-semibold">{video.title}</h3>
-              <div className="aspect-video">
+            <div key={video.title} className="space-y-2 group">
+              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{video.title}</h3>
+              <div className="aspect-video overflow-hidden rounded-lg border-2 border-transparent group-hover:border-primary transition-all group-hover:shadow-lg">
                 <iframe
-                  className="w-full h-full rounded-lg"
+                  className="w-full h-full"
                   src={video.src}
                   title={`${video.title} Video`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -163,11 +175,11 @@ export default function LearningHubPage() {
             {safetyKitItems.map(item => {
                 const Icon = item.icon;
                 return (
-                    <div key={item.name} className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
-                        <Icon className="h-8 w-8 text-primary" />
+                    <div key={item.name} className={`flex items-center gap-4 p-4 rounded-lg ${item.color} transition-transform hover:scale-105`}>
+                        <Icon className="h-8 w-8" />
                         <div>
                             <p className="font-semibold">{item.name}</p>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                            <p className="text-sm opacity-80">{item.description}</p>
                         </div>
                     </div>
                 );
@@ -177,32 +189,41 @@ export default function LearningHubPage() {
 
 
       {/* Interactive Quiz Section */}
-      <Card>
+      <Card className="bg-gradient-to-br from-background to-muted/30">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Gamepad2 className="h-6 w-6" />
+            <Gamepad2 className="h-6 w-6 text-primary" />
             <CardTitle>Disaster Prep Quiz</CardTitle>
           </div>
           <CardDescription>Test your knowledge and see your score at the end!</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
             {quizFinished ? (
-                <div className="text-center space-y-4">
-                    <Alert>
+                <div className="text-center space-y-4 p-4 rounded-lg bg-background">
+                     <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300">
+                        <finalScoreMessage.icon className="h-6 w-6 text-green-600 dark:text-green-400" />
                         <AlertTitle className="text-2xl font-bold">Quiz Finished!</AlertTitle>
                         <AlertDescription className="text-lg">
                             Your final score is: <span className="font-bold text-primary">{score} / {quizQuestions.length}</span>
                         </AlertDescription>
                     </Alert>
+                    <p className="text-lg font-semibold">{finalScoreMessage.message}</p>
                     <Button onClick={restartQuiz}>Play Again</Button>
                 </div>
             ) : (
             <>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
+                    <span>Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
+                    <span>Score: {score}</span>
+                  </div>
+                  <Progress value={((currentQuestionIndex + 1) / quizQuestions.length) * 100} className="w-full h-2" />
+                </div>
                 <div>
-                <p className="font-semibold text-lg mb-4">Question {currentQuestionIndex + 1}/{quizQuestions.length}: {currentQuestion.question}</p>
+                <p className="font-semibold text-lg mb-4">{currentQuestion.question}</p>
                 <RadioGroup value={selectedAnswer || ""} onValueChange={setSelectedAnswer} className="space-y-2">
                     {currentQuestion.options.map((option) => (
-                    <div key={option} className={`flex items-center space-x-3 p-3 rounded-md border transition-colors ${showResult && (option === currentQuestion.correctAnswer ? 'bg-green-100 border-green-300' : (option === selectedAnswer ? 'bg-red-100 border-red-300' : ''))}`}>
+                    <div key={option} className={`flex items-center space-x-3 p-3 rounded-md border-2 transition-all ${showResult ? (option === currentQuestion.correctAnswer ? 'border-green-500 bg-green-100/50 dark:bg-green-900/30' : (option === selectedAnswer ? 'border-red-500 bg-red-100/50 dark:bg-red-900/30' : 'border-border')) : 'border-border hover:border-primary cursor-pointer'}`}>
                         <RadioGroupItem value={option} id={option} disabled={showResult} />
                         <Label htmlFor={option} className="flex-1 cursor-pointer">{option}</Label>
                         {showResult && (
@@ -214,16 +235,22 @@ export default function LearningHubPage() {
                 </div>
                 
                 {showResult && (
-                    <div className={`p-4 rounded-md text-center font-medium ${selectedAnswer === currentQuestion.correctAnswer ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {selectedAnswer === currentQuestion.correctAnswer ? "Correct!" : "Not quite! The correct answer is highlighted in green."}
-                    </div>
+                    <Alert variant={selectedAnswer === currentQuestion.correctAnswer ? 'default' : 'destructive'} className={selectedAnswer === currentQuestion.correctAnswer ? 'bg-green-100/60 dark:bg-green-900/30 border-green-300 dark:border-green-700' : ''}>
+                        <AlertTitle>{selectedAnswer === currentQuestion.correctAnswer ? "Correct!" : "Not quite!"}</AlertTitle>
+                        <AlertDescription>
+                            {selectedAnswer !== currentQuestion.correctAnswer && `The correct answer is "${currentQuestion.correctAnswer}".`}
+                        </AlertDescription>
+                    </Alert>
                 )}
 
                 <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={handleCheckAnswer} disabled={!selectedAnswer || showResult}>Check Answer</Button>
-                    <Button onClick={handleNextQuestion} disabled={!showResult}>
-                        {currentQuestionIndex < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'}
-                    </Button>
+                    {showResult ? (
+                         <Button onClick={handleNextQuestion}>
+                            {currentQuestionIndex < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                        </Button>
+                    ) : (
+                        <Button variant="outline" onClick={handleCheckAnswer} disabled={!selectedAnswer || showResult}>Check Answer</Button>
+                    )}
                 </div>
             </>
             )}
@@ -232,3 +259,4 @@ export default function LearningHubPage() {
     </div>
   );
 }
+
