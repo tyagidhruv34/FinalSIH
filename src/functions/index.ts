@@ -17,14 +17,13 @@ const translationClient = new TranslationServiceClient();
 
 const TARGET_LANGUAGES = [
   "hi", // Hindi
-  "mr", // Marathi
   "ta", // Tamil
   "te", // Telugu
   "bn", // Bengali
+  "mr", // Marathi
   "gu", // Gujarati
   "kn", // Kannada
   "ml", // Malayalam
-  "pa", // Punjabi
 ];
 
 // This Cloud Function triggers when a new alert is created.
@@ -47,9 +46,10 @@ export const translateAndNotify = onDocumentCreated("alerts/{alertId}", async (e
 
   // Check if the title starts with 'SOS:' which indicates a user-triggered alert
   if(title && title.startsWith('SOS:')) {
+    const userDisplayName = title.replace('SOS: Help request from ', '');
     message = {
       notification: {
-        title: `🔴 CRITICAL SOS: ${title.replace('SOS: ', '')}`,
+        title: `🔴 CRITICAL SOS: ${userDisplayName}`,
         body: description,
       },
       android: {

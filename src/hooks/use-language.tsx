@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Language = 'en' | 'hi' | 'ta' | 'te' | 'bn';
+type Language = 'en' | 'hi' | 'ta' | 'te' | 'bn' | 'mr' | 'gu' | 'kn' | 'ml';
 type LanguageContextType = {
   language: Language;
   setLanguage: (language: Language) => void;

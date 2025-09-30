@@ -28,6 +28,9 @@ const supportedLanguages = [
     { code: 'ta', name: 'தமிழ்' },
     { code: 'te', name: 'తెలుగు' },
     { code: 'bn', name: 'বাংলা' },
+    { code: 'mr', name: 'मराठी' },
+    { code: 'gu', name: 'ગુજરાતી' },
+    { code: 'kn', name: 'ಕನ್ನಡ' },
 ];
 
 
