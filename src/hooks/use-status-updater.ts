@@ -13,7 +13,7 @@ export function useStatusUpdater() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState<'safe' | 'help' | null>(null);
 
-  const handleStatusUpdate = (status: 'safe' | 'help'): Promise<void> => {
+  const handleStatusUpdate = (status: 'safe' | 'help'): Promise<string | null> => {
     return new Promise(async (resolve, reject) => {
         if (!user) {
             toast({
@@ -27,13 +27,14 @@ export function useStatusUpdater() {
         setIsSubmitting(status);
 
         const createAlertWithLocation = async (location: GeoPoint | null) => {
+            let alertId: string | null = null;
             try {
                  if (status === 'help') {
                     const lat = location?.latitude.toFixed(4);
                     const lon = location?.longitude.toFixed(4);
                     const locationString = location ? `at location: ${lat}, ${lon}` : "at an unknown location";
 
-                    await AlertService.createAlert({
+                    alertId = await AlertService.createAlert({
                         title: `SOS: Help request from ${user.displayName || 'a user'}`,
                         description: `A user has requested immediate assistance ${locationString}.`,
                         severity: 'Critical',
@@ -58,6 +59,7 @@ export function useStatusUpdater() {
                     title: "Status Updated",
                     description: `You've been marked as ${status}. Your location has ${location ? '' : 'not '}been shared.`,
                 });
+                return alertId;
                 
             } catch (error) {
                  console.error("Error creating alert or updating status: ", error);
@@ -75,15 +77,15 @@ export function useStatusUpdater() {
               async (position) => {
                 const { latitude, longitude } = position.coords;
                 const geoPoint = new GeoPoint(latitude, longitude);
-                await createAlertWithLocation(geoPoint);
+                const alertId = await createAlertWithLocation(geoPoint);
                 setIsSubmitting(null);
-                resolve();
+                resolve(alertId);
               },
               async (error) => {
                 console.warn("Could not get location: ", error.message);
-                await createAlertWithLocation(null);
+                const alertId = await createAlertWithLocation(null);
                  setIsSubmitting(null);
-                 resolve();
+                 resolve(alertId);
               },
               {
                   enableHighAccuracy: true,
