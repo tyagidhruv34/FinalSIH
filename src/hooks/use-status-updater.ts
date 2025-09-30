@@ -26,63 +26,62 @@ export function useStatusUpdater() {
 
         setIsSubmitting(status);
 
-        try {
-            let alertId: string | null = null;
-            if (status === 'help') {
-                alertId = await AlertService.createAlert({
-                    title: `SOS: Help request from ${user.displayName || 'a user'}`,
-                    description: `A user has requested immediate assistance. Their location is being fetched.`,
-                    severity: 'Critical',
-                    type: 'Other',
-                    affectedAreas: [],
-                    createdBy: user.uid,
-                    acknowledged: false,
-                    rescueStatus: null,
-                });
-            }
-            
-            navigator.geolocation.getCurrentPosition(
-              async (position) => {
-                const { latitude, longitude } = position.coords;
-                const geoPoint = new GeoPoint(latitude, longitude);
+        const createAlertWithLocation = async (location: GeoPoint | null) => {
+            try {
+                 if (status === 'help') {
+                    const lat = location?.latitude.toFixed(4);
+                    const lon = location?.longitude.toFixed(4);
+                    const locationString = location ? `at location: ${lat}, ${lon}` : "at an unknown location";
+
+                    await AlertService.createAlert({
+                        title: `SOS: Help request from ${user.displayName || 'a user'}`,
+                        description: `A user has requested immediate assistance ${locationString}.`,
+                        severity: 'Critical',
+                        type: 'Other',
+                        affectedAreas: location ? [`Lat: ${lat}, Lon: ${lon}`] : ["Location not available"],
+                        createdBy: user.uid,
+                        acknowledged: false,
+                        rescueStatus: null,
+                    });
+                }
 
                 await updateUserStatus({
                     userId: user.uid,
                     userName: user.displayName || 'Anonymous',
                     userAvatarUrl: user.photoURL || undefined,
                     status,
-                    location: geoPoint,
+                    location,
                     timestamp: serverTimestamp(),
                 });
 
-                if (status === 'help' && alertId) {
-                    await AlertService.updateAlert(alertId, { 
-                        description: `A user has requested immediate assistance at the location marked on the map.`,
-                        affectedAreas: [`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`]
-                    });
-                }
-                
                 toast({
                     title: "Status Updated",
-                    description: `You've been marked as ${status}. Your location has been shared.`,
+                    description: `You've been marked as ${status}. Your location has ${location ? '' : 'not '}been shared.`,
                 });
+                
+            } catch (error) {
+                 console.error("Error creating alert or updating status: ", error);
+                 toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Could not update your status. Please try again.",
+                });
+                throw error; // Propagate error
+            }
+        }
+
+        try {
+            navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                const { latitude, longitude } = position.coords;
+                const geoPoint = new GeoPoint(latitude, longitude);
+                await createAlertWithLocation(geoPoint);
                 setIsSubmitting(null);
                 resolve();
               },
               async (error) => {
                 console.warn("Could not get location: ", error.message);
-                 await updateUserStatus({
-                    userId: user.uid,
-                    userName: user.displayName || 'Anonymous',
-                    userAvatarUrl: user.photoURL || undefined,
-                    status,
-                    timestamp: serverTimestamp(),
-                });
-                toast({
-                  title: "Status Updated",
-                  description: `You've been marked as ${status}. Your location could not be shared.`,
-                  variant: "default",
-                });
+                await createAlertWithLocation(null);
                  setIsSubmitting(null);
                  resolve();
               },
@@ -93,12 +92,6 @@ export function useStatusUpdater() {
               }
             );
         } catch (error) {
-            console.error("Error updating status: ", error);
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Could not update your status. Please try again.",
-            });
             setIsSubmitting(null);
             reject(error);
         }
