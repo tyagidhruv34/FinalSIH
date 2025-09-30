@@ -171,7 +171,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
               .bindPopup(`<p class="font-bold">${need.quantity}x ${need.item}</p><p>Urgency: ${need.urgency}</p><p>Contact: ${need.contactInfo}</p>`);
       });
 
-      damageReports.forEach((report) => {
+      (damageReports || []).forEach((report) => {
         if (!report.location) return;
         L.marker([report.location.latitude, report.location.longitude], { icon: damageReportIcon })
             .addTo(markers)
@@ -182,6 +182,6 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
 
 
   return (
-    <div id="map" ref={mapContainerRef} className={cn("h-[500px] w-full rounded-lg overflow-hidden border", className)} />
+    <div id="map" ref={mapContainerRef} className={cn("h-[500px] w-full rounded-lg overflow-hidden border min-h-[500px] z-0", className)} />
   );
 }
