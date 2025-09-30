@@ -36,7 +36,7 @@ import { useStatusUpdater } from "@/hooks/use-status-updater";
 import { Loader2, Mic, MicOff } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -77,13 +77,13 @@ export default function Header() {
   const router = useRouter();
   const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
   const { t } = useLanguage();
-  const [isSosDialogOpen, setIsSosDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleVoiceCommand = (command: string) => {
     const lowerCaseCommand = command.toLowerCase();
-    if (lowerCaseCommand.includes('help') || lowerCaseCommand.includes('sos')) {
-      setIsSosDialogOpen(true);
+    if (lowerCaseCommand.includes('save me')) {
+        toast({ title: "Voice command recognized", description: "Sending SOS..." });
+        handleSos();
     }
   };
 
@@ -168,7 +168,7 @@ export default function Header() {
                 <span className="sr-only">Toggle Voice Commands</span>
             </Button>
         )}
-        <AlertDialog open={isSosDialogOpen} onOpenChange={setIsSosDialogOpen}>
+        <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button size="lg" variant="destructive" disabled={!user || !!isSubmitting} className="font-semibold shadow-sm hover:bg-destructive/90">
               {isSubmitting ? (
