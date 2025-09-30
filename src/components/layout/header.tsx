@@ -31,7 +31,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useStatusUpdater } from "@/hooks/use-status-updater";
 import { Loader2 } from "lucide-react";
@@ -76,7 +75,7 @@ export default function Header() {
   
   const handleSos = async () => {
     await handleStatusUpdate('help');
-    router.push('/resource-locator');
+    router.push('/');
   }
 
   return (

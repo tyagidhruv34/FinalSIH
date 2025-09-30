@@ -14,6 +14,8 @@ export type Alert = {
   type: "Cyclone" | "Flood" | "Earthquake" | "Fire" | "Other";
   timestamp: Timestamp;
   createdBy: string;
+  acknowledged?: boolean;
+  rescueStatus?: 'Dispatched' | 'In Progress' | 'Completed';
 };
 
 export type StatusUpdate = {

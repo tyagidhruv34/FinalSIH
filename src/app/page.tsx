@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Clock, Map, ListFilter, ServerCrash, Users } from "lucide-react";
+import { Clock, Map, ListFilter, ServerCrash, Users, LifeBuoy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,8 +21,7 @@ import { db } from '@/lib/firebase/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Building2, ShieldAlert } from 'lucide-react';
-import { DamageReportService } from '@/lib/firebase/damage-reports';
-import type { DamageReport } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
 
 const severityStyles: { [key in Alert['severity']]: string } = {
   "Critical": "border-accent text-accent-foreground bg-accent/10",
@@ -40,11 +39,14 @@ const severityOrder: { [key in Alert['severity']]: number } = {
 
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
-  const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
+  const [damageReports, setDamageReports] = useState<any[]>([]); // Using any to avoid type issues with firebase data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const userSosAlert = user ? alerts.find(a => a.createdBy === user.uid && a.severity === 'Critical' && a.rescueStatus !== 'Completed') : undefined;
 
   useEffect(() => {
     setLoading(true);
@@ -52,7 +54,7 @@ export default function DashboardPage() {
     const alertsQuery = query(
         collection(db, 'alerts'),
         orderBy('timestamp', 'desc'),
-        limit(10)
+        limit(20) // Fetch more to find user's SOS
     );
 
     const unsubscribeAlerts = onSnapshot(alertsQuery, (querySnapshot) => {
@@ -63,7 +65,7 @@ export default function DashboardPage() {
         const sortedAlerts = fetchedAlerts.sort((a, b) => {
             const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
             if (severityDiff !== 0) return severityDiff;
-            if (!a.timestamp) return 1; // Put alerts without timestamp (i.e. new SOS) at the top
+            if (!a.timestamp) return 1;
             if (!b.timestamp) return -1;
             return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
@@ -93,10 +95,9 @@ export default function DashboardPage() {
         setError("Failed to load community help requests.");
     });
     
-    // Fetch damage reports for the stats card
     const reportsQuery = query(collection(db, 'damage_reports'));
     const unsubscribeReports = onSnapshot(reportsQuery, (snapshot) => {
-        const fetchedReports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DamageReport));
+        const fetchedReports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setDamageReports(fetchedReports);
     });
 
@@ -124,6 +125,29 @@ export default function DashboardPage() {
         </div>
       </div>
       
+      {userSosAlert && (
+          <Card className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-blue-800 dark:text-blue-300">
+                    <LifeBuoy className="h-6 w-6 animate-pulse" />
+                    Your SOS Rescue Status
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-lg font-semibold">
+                    {userSosAlert.acknowledged ? 
+                     `Status: ${userSosAlert.rescueStatus || 'Acknowledged'}` :
+                     'SOS Sent. Awaiting Acknowledgement.'}
+                </p>
+                <p className="text-muted-foreground mt-1">
+                    {userSosAlert.acknowledged ? 
+                     'A rescue team has been notified. Help is on the way.' : 
+                     'Your request has been received. An admin will review it shortly.'}
+                </p>
+            </CardContent>
+          </Card>
+      )}
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -201,7 +225,7 @@ export default function DashboardPage() {
                 </Card>
               )}
 
-              {!loading && !error && alerts.length === 0 && (
+              {!loading && !error && alerts.filter(a => a.id !== userSosAlert?.id).length === 0 && (
                 <Card className="flex items-center justify-center h-64">
                     <div className="text-center">
                         <CardTitle>All Clear!</CardTitle>
@@ -212,7 +236,7 @@ export default function DashboardPage() {
 
               {!loading && !error && alerts.length > 0 && (
                 <div className="grid gap-6 md:grid-cols-2">
-                  {alerts.map((alert) => (
+                  {alerts.filter(a => a.id !== userSosAlert?.id).slice(0, 10).map((alert) => (
                     <Card key={alert.id} className={cn("flex flex-col border-l-4", severityStyles[alert.severity].split(' ')[0].replace('bg-','border-'))}>
                       <CardHeader className="pb-2">
                         <div className="flex items-start justify-between">
@@ -304,5 +328,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

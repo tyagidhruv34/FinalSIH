@@ -33,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Alert, DamageReport } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { Trash2, ShieldAlert, BarChart3, Building2 } from 'lucide-react';
+import { Trash2, ShieldAlert, BarChart3, Building2, CheckCircle } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Timestamp, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
@@ -153,6 +153,22 @@ export default function AdminAlertPage() {
       toast({
         title: "Error",
         description: "Failed to delete the alert.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleAcknowledge = async (alertId: string) => {
+    try {
+      await AlertService.acknowledgeSosAlert(alertId);
+      toast({
+        title: "SOS Acknowledged",
+        description: "Rescue team has been dispatched.",
+      });
+    } catch (error) {
+       toast({
+        title: "Error",
+        description: "Failed to acknowledge the SOS.",
         variant: "destructive",
       });
     }
@@ -355,10 +371,18 @@ export default function AdminAlertPage() {
                                         <TableCell className="font-medium">{alert.title}</TableCell>
                                         <TableCell><Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'}>{alert.severity}</Badge></TableCell>
                                         <TableCell>{alert.timestamp ? format(alert.timestamp.toDate(), 'PPP p') : 'Just now'}</TableCell>
-                                        <TableCell className="text-right">
-                                          <Button variant="ghost" size="icon" onClick={() => handleDeleteAlert(alert.id)}>
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                          </Button>
+                                        <TableCell className="text-right space-x-1">
+                                            {alert.severity === 'Critical' && !alert.acknowledged && (
+                                                <Button variant="outline" size="sm" onClick={() => handleAcknowledge(alert.id)}>
+                                                    Acknowledge
+                                                </Button>
+                                            )}
+                                            {alert.acknowledged && (
+                                                <Badge variant="secondary"><CheckCircle className="h-4 w-4 mr-1 text-green-600"/> Acknowledged</Badge>
+                                            )}
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteAlert(alert.id)}>
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -405,5 +429,3 @@ export default function AdminAlertPage() {
     </div>
   );
 }
-
-    

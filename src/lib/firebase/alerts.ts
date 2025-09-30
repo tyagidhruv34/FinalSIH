@@ -58,4 +58,18 @@ export class AlertService {
       throw new Error("Failed to delete alert.");
     }
   }
+
+  // Acknowledge an SOS alert and dispatch a team
+  static async acknowledgeSosAlert(alertId: string): Promise<void> {
+    try {
+      const alertDocRef = doc(db, 'alerts', alertId);
+      await updateDoc(alertDocRef, {
+        acknowledged: true,
+        rescueStatus: 'Dispatched',
+      });
+    } catch (error) {
+      console.error("Error acknowledging alert: ", error);
+      throw new Error("Failed to acknowledge alert.");
+    }
+  }
 }
