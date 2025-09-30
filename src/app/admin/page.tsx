@@ -31,8 +31,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format } from 'date-fns';
-import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle, ShieldX, Loader2 } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle, ShieldX, Loader2, User } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Timestamp, collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
@@ -247,7 +247,7 @@ export default function AdminAlertPage() {
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{alerts.filter(a => a.severity === 'Critical').length}</div>
+            <div className="text-2xl font-bold text-destructive">{helpRequests.length}</div>
             <p className="text-xs text-muted-foreground">
               Users actively requesting help
             </p>
@@ -504,10 +504,42 @@ export default function AdminAlertPage() {
             </CardContent>
         </Card>
       </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Active SOS Requests</CardTitle>
+                <CardDescription>Users who have signaled they need help.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="max-h-[300px] overflow-y-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>User</TableHead>
+                                <TableHead>Time</TableHead>
+                                <TableHead>Location (Lat, Lon)</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {helpRequests.map(req => (
+                                <TableRow key={req.id}>
+                                    <TableCell className="font-medium">
+                                        <div className="flex items-center gap-2">
+                                            <User className="h-4 w-4" />
+                                            {req.userName}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>{req.timestamp ? formatDistanceToNow(req.timestamp.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
+                                    <TableCell>{req.location ? `${req.location.latitude.toFixed(4)}, ${req.location.longitude.toFixed(4)}` : 'Not Available'}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+                {helpRequests.length === 0 && <p className="text-center text-muted-foreground py-4">No active SOS requests.</p>}
+            </CardContent>
+        </Card>
     </div>
   );
 }
-
-    
 
     
