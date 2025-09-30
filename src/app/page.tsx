@@ -56,8 +56,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const userSosAlert = user ? alerts.find(a => a.createdBy === user.uid && a.severity === 'Critical' && a.rescueStatus !== 'Completed') : undefined;
-  
+  const [userSosAlert, setUserSosAlert] = useState<Alert | null>(null);
   const [sosLocation, setSosLocation] = useState<[number, number] | null>(null);
   const [sosUserStatus, setSosUserStatus] = useState<UserStatus | null>(null);
 
@@ -67,7 +66,7 @@ export default function DashboardPage() {
     const alertsQuery = query(
         collection(db, 'alerts'),
         orderBy('timestamp', 'desc'),
-        limit(20) // Fetch more to find user's SOS
+        limit(20)
     );
 
     const unsubscribeAlerts = onSnapshot(alertsQuery, async (querySnapshot) => {
@@ -75,15 +74,18 @@ export default function DashboardPage() {
             let alertData = docSnapshot.data() as Alert;
             
             if (language !== 'en') {
-                const translationRef = doc(db, 'alerts', docSnapshot.id, 'translations', language);
-                const translationSnap = await getDoc(translationRef);
-                if (translationSnap.exists()) {
-                    const translationData = translationSnap.data();
-                    alertData.title = translationData.title;
-                    alertData.description = translationData.description;
+                try {
+                    const translationRef = doc(db, 'alerts', docSnapshot.id, 'translations', language);
+                    const translationSnap = await getDoc(translationRef);
+                    if (translationSnap.exists()) {
+                        const translationData = translationSnap.data();
+                        alertData.title = translationData.title;
+                        alertData.description = translationData.description;
+                    }
+                } catch (e) {
+                    // This can happen if the translation subcollection isn't created yet, which is fine.
                 }
             }
-
             return { id: docSnapshot.id, ...alertData };
         });
         
@@ -96,6 +98,13 @@ export default function DashboardPage() {
             if (!b.timestamp) return -1;
             return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
+
+        if (user) {
+            const currentUserSos = sortedAlerts.find(a => a.createdBy === user.uid && a.severity === 'Critical' && a.rescueStatus !== 'Completed');
+            setUserSosAlert(currentUserSos || null);
+        } else {
+            setUserSosAlert(null);
+        }
 
         setAlerts(sortedAlerts);
         setLoading(false);
@@ -136,31 +145,43 @@ export default function DashboardPage() {
         unsubscribeReports();
     };
 
-  }, [language, t]);
+  }, [language, t, user]);
 
   useEffect(() => {
-    if (userSosAlert) {
-      const area = userSosAlert.affectedAreas.find(a => a.startsWith('Lat:'));
-      if (area) {
-        const parts = area.split(', ');
-        const lat = parseFloat(parts[0].replace('Lat: ', ''));
-        const lon = parseFloat(parts[1].replace('Lon: ', ''));
-        setSosLocation([lat, lon]);
-        
-        // Find the matching user_status to show on map
-        const userStatusQuery = query(collection(db, 'user_status'), where('userId', '==', userSosAlert.createdBy), where('status', '==', 'help'));
-        const unsubscribe = onSnapshot(userStatusQuery, (snapshot) => {
+    let unsubscribe: (() => void) | null = null;
+
+    if (userSosAlert && user) {
+        // Find the location from the alert's affectedAreas
+        const area = userSosAlert.affectedAreas.find(a => a.startsWith('Lat:'));
+        if (area) {
+            const parts = area.split(', ');
+            const lat = parseFloat(parts[0].replace('Lat: ', ''));
+            const lon = parseFloat(parts[1].replace('Lon: ', ''));
+            setSosLocation([lat, lon]);
+        }
+
+        // Fetch the corresponding user_status to display on the map
+        const userStatusQuery = query(collection(db, 'user_status'), where('userId', '==', user.uid), where('status', '==', 'help'), limit(1));
+        unsubscribe = onSnapshot(userStatusQuery, (snapshot) => {
             if (!snapshot.empty) {
-                setSosUserStatus(snapshot.docs[0].data() as UserStatus);
+                const statusDoc = snapshot.docs[0];
+                setSosUserStatus({ id: statusDoc.id, ...statusDoc.data() } as UserStatus);
+            } else {
+                setSosUserStatus(null);
             }
         });
-        return () => unsubscribe();
-      }
+
     } else {
-      setSosLocation(null);
-      setSosUserStatus(null);
+        setSosLocation(null);
+        setSosUserStatus(null);
     }
-  }, [userSosAlert]);
+    
+    return () => {
+        if(unsubscribe) {
+            unsubscribe();
+        }
+    };
+}, [userSosAlert, user]);
 
   return (
     <div className="space-y-8">
@@ -222,6 +243,7 @@ export default function DashboardPage() {
                           damageReports={[]}
                           center={sosLocation}
                           zoom={14}
+                          currentUserId={user?.uid}
                       />
                   </div>
                 )}
