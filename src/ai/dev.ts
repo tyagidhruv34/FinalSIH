@@ -1,3 +1,5 @@
+'use server';
+
 import { config } from 'dotenv';
 config();
 
@@ -8,3 +10,4 @@ import '@/ai/flows/assess-damage-flow.ts';
 import '@/ai/flows/extract-face-embeddings-flow.ts';
 import '@/ai/flows/find-matching-faces-flow.ts';
 import '@/ai/flows/predict-impact-flow.ts';
+import '@/ai/flows/chatbot-flow.ts';

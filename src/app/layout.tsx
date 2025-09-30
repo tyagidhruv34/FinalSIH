@@ -9,6 +9,8 @@ import Header from '@/components/layout/header';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/hooks/use-auth';
 import { LanguageProvider } from '@/hooks/use-language';
+import Chatbot from '@/components/chatbot';
+
 
 // Leaflet CSS for react-leaflet
 import 'leaflet/dist/leaflet.css';
@@ -46,6 +48,7 @@ export default function RootLayout({
             </SidebarProvider>
           </LanguageProvider>
         </AuthProvider>
+        <Chatbot />
         <Toaster />
       </body>
     </html>
