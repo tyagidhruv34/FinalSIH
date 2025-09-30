@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -76,6 +77,9 @@ const flagDuplicateUpdatesFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await flagDuplicateUpdatesPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('The AI model did not return a valid assessment.');
+    }
+    return output;
   }
 );

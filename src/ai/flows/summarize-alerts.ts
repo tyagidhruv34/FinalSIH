@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -56,6 +57,9 @@ const summarizeAlertsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await summarizeAlertsPrompt(input);
-    return output!;
+    if (!output) {
+        throw new Error('The AI model did not return a valid response.');
+    }
+    return output;
   }
 );

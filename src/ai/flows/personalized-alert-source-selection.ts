@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for personalizing alert sources based on user settings.
@@ -50,6 +51,9 @@ const personalizedAlertSourceSelectionFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+        throw new Error('The AI model did not return a valid response.');
+    }
+    return output;
   }
 );
