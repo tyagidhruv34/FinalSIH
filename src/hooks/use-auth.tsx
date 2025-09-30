@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, signInWithGoogle, signOut as firebaseSignOut } from '@/lib/firebase/auth';
 
 

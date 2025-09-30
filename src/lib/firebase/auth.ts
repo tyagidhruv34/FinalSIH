@@ -3,13 +3,8 @@ import {
   getAuth, 
   onAuthStateChanged,
   GoogleAuthProvider, 
-  signInWithRedirect,
   signInWithPopup,
-  getRedirectResult,
   signOut as firebaseSignOut,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  ConfirmationResult,
   User,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -75,17 +70,6 @@ export const signInWithEmail = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
 };
 
-
-export const signInWithPhone = async (phoneNumber: string, verifier: RecaptchaVerifier): Promise<ConfirmationResult> => {
-    return signInWithPhoneNumber(auth, phoneNumber, verifier);
-};
-
-export const verifyOtp = async (confirmationResult: ConfirmationResult, otp: string) => {
-    const result = await confirmationResult.confirm(otp);
-    await createUserProfileDocument(result.user);
-};
-
-
 export const signOut = async () => {
   try {
     await firebaseSignOut(auth);
@@ -93,19 +77,3 @@ export const signOut = async () => {
     console.error('Error signing out', error);
   }
 };
-
-export const onAuthUserChanged = (callback: (user: User | null) => void) => {
-  return onAuthStateChanged(auth, callback);
-};
-
-// New function to handle redirect result
-export const handleRedirectResult = async () => {
-    try {
-        const result = await getRedirectResult(auth);
-        if (result && result.user) {
-            await createUserProfileDocument(result.user);
-        }
-    } catch (error) {
-        console.error("Error handling redirect result", error);
-    }
-}

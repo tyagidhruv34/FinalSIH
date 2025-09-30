@@ -29,7 +29,7 @@ export default function AuthForm() {
     try {
       await signInWithGoogle();
     } catch (error: any) {
-      if (error?.code === 'auth/cancelled-popup-request' || error?.code === 'auth/popup-closed-by-user') {
+      if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
         toast({
           variant: 'default',
           title: 'Sign-in Cancelled',
@@ -40,7 +40,7 @@ export default function AuthForm() {
         toast({
           variant: 'destructive',
           title: 'Sign-in Error',
-          description: 'An unexpected error occurred during sign-in. Your Vercel domain might need to be authorized in the Firebase console.',
+          description: 'An unexpected error occurred. Please ensure your Vercel domain is an authorized domain in your Firebase project settings.',
         });
       }
     }
