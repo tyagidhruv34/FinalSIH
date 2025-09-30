@@ -27,7 +27,8 @@ export default function AuthForm() {
 
 
   useEffect(() => {
-    if (window.location.hostname !== 'localhost' && !window.location.hostname.endsWith('.app') && !window.location.hostname.endsWith('.dev')) {
+    const hostname = window.location.hostname;
+    if (hostname !== 'localhost' && !hostname.endsWith('.app') && !hostname.endsWith('.dev') && !hostname.endsWith('.vercel.app')) {
         setIsNonLocalhost(true);
     }
   }, [])
