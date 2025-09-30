@@ -1,3 +1,4 @@
+
 {
     "nav_dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
     "nav_rescue_dashboard": "ಪರಿಹಾರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
@@ -14,7 +15,7 @@
     "nav_settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
     "nav_admin": "ನಿರ್ವಾಹಕ",
     "nav_feedback": "ಪ್ರತಿಕ್ರಿಯೆ",
-    "app_title": "ಆಪದ ಮಾರ್ಗದರ್ಶಿ",
+    "app_title": "ಸಂಕಟ್ ಮೋಚನ್",
     "header_sos": "SOS",
     "header_profile": "ಪ್ರೊಫೈಲ್",
     "header_logout": "ಲಾಗ್ ಔಟ್",
@@ -62,7 +63,7 @@
     "settings_save_success_title": "ಆದ್ಯತೆಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ",
     "settings_save_success_description": "ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ.",
 
-    "error_failed_to_load_title": "ಡೇಟಾ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
+    "error_failed_to_load_title": "ಡೇಟಾ ಲೋಡ್ ಮಾಡಲು ವಿಫలವಾಗಿದೆ",
     "error_failed_to_load_alerts": "ಎಚ್ಚರಿಕೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ.",
     "error_failed_to_load_community_requests": "ಸಮುದಾಯ ಸಹಾಯ ವಿನಂತಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ."
 }
