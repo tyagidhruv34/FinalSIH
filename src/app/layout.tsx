@@ -6,6 +6,7 @@ import SidebarNav from '@/components/layout/sidebar-nav';
 import Header from '@/components/layout/header';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/hooks/use-auth';
+import { LanguageProvider } from '@/hooks/use-language';
 
 // Leaflet CSS for react-leaflet
 import 'leaflet/dist/leaflet.css';
@@ -30,15 +31,17 @@ export default function RootLayout({
       </head>
       <body className={cn("antialiased", 'min-h-screen bg-background font-sans')}>
         <AuthProvider>
-          <SidebarProvider>
-              <div className="flex min-h-screen w-full">
-                <SidebarNav />
-                <div className="flex flex-1 flex-col">
-                  <Header />
-                  <main className="flex-1 p-4 sm:p-6 md:p-8">{children}</main>
+          <LanguageProvider>
+            <SidebarProvider>
+                <div className="flex min-h-screen w-full">
+                  <SidebarNav />
+                  <div className="flex flex-1 flex-col">
+                    <Header />
+                    <main className="flex-1 p-4 sm:p-6 md:p-8">{children}</main>
+                  </div>
                 </div>
-              </div>
-          </SidebarProvider>
+            </SidebarProvider>
+          </LanguageProvider>
         </AuthProvider>
         <Toaster />
       </body>

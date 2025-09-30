@@ -16,12 +16,13 @@ import type { Alert, UserStatus } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { collection, onSnapshot, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Building2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { useLanguage } from '@/hooks/use-language';
 
 const severityStyles: { [key in Alert['severity']]: string } = {
   "Critical": "border-accent text-accent-foreground bg-accent/10",
@@ -40,6 +41,7 @@ const severityOrder: { [key in Alert['severity']]: number } = {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
   const [damageReports, setDamageReports] = useState<any[]>([]); // Using any to avoid type issues with firebase data
@@ -57,11 +59,26 @@ export default function DashboardPage() {
         limit(20) // Fetch more to find user's SOS
     );
 
-    const unsubscribeAlerts = onSnapshot(alertsQuery, (querySnapshot) => {
-        const fetchedAlerts: Alert[] = [];
-        querySnapshot.forEach((doc) => {
-            fetchedAlerts.push({ id: doc.id, ...doc.data() } as Alert);
+    const unsubscribeAlerts = onSnapshot(alertsQuery, async (querySnapshot) => {
+        const fetchedAlertsPromises: Promise<Alert>[] = querySnapshot.docs.map(async (docSnapshot) => {
+            let alertData = docSnapshot.data() as Alert;
+            
+            // If language is not English, try to fetch translation
+            if (language !== 'en') {
+                const translationRef = doc(db, 'alerts', docSnapshot.id, 'translations', language);
+                const translationSnap = await getDoc(translationRef);
+                if (translationSnap.exists()) {
+                    const translationData = translationSnap.data();
+                    alertData.title = translationData.title;
+                    alertData.description = translationData.description;
+                }
+            }
+
+            return { id: docSnapshot.id, ...alertData };
         });
+        
+        const fetchedAlerts = await Promise.all(fetchedAlertsPromises);
+
         const sortedAlerts = fetchedAlerts.sort((a, b) => {
             const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
             if (severityDiff !== 0) return severityDiff;
@@ -69,6 +86,7 @@ export default function DashboardPage() {
             if (!b.timestamp) return -1;
             return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
+
         setAlerts(sortedAlerts);
         setLoading(false);
     }, (err) => {
@@ -108,7 +126,7 @@ export default function DashboardPage() {
         unsubscribeReports();
     };
 
-  }, []);
+  }, [language]);
 
   return (
     <div className="space-y-8">
