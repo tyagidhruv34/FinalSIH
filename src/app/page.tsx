@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Alert, UserStatus, Resource } from '@/lib/types';
+import type { Alert, UserStatus } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -431,3 +431,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

@@ -1,4 +1,3 @@
-
 import {
   Card,
   CardContent,
@@ -68,3 +67,5 @@ export default function AdvisoriesPage() {
     </div>
   );
 }
+
+    

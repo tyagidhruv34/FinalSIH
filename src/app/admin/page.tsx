@@ -27,13 +27,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { indianDistricts, alertTypes, alertSeverities } from '@/lib/data';
 import { AlertService } from '@/lib/firebase/alerts';
-import { DamageReportService } from '@/lib/firebase/damage-reports';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { Trash2, ShieldAlert, BarChart3, Building2, CheckCircle, MapPin, AlertTriangle } from 'lucide-react';
+import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Timestamp, collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
@@ -497,5 +496,6 @@ export default function AdminAlertPage() {
       </div>
     </div>
   );
+}
 
     
