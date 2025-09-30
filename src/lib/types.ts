@@ -15,7 +15,7 @@ export type Alert = {
   timestamp: Timestamp;
   createdBy: string;
   acknowledged?: boolean;
-  rescueStatus?: 'Dispatched' | 'In Progress' | 'Completed';
+  rescueStatus?: 'Dispatched' | 'In Progress' | 'Completed' | null;
 };
 
 export type StatusUpdate = {

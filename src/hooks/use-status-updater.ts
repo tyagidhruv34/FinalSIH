@@ -37,7 +37,7 @@ export function useStatusUpdater() {
                     affectedAreas: [],
                     createdBy: user.uid,
                     acknowledged: false,
-                    rescueStatus: undefined,
+                    rescueStatus: null,
                 });
             }
             
