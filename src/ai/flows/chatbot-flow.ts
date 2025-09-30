@@ -28,10 +28,6 @@ export const ChatOutputSchema = z.object({
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
 
-export async function chat(input: ChatInput): Promise<ChatOutput> {
-  return chatbotFlow(input);
-}
-
 const chatbotFlow = ai.defineFlow(
   {
     name: 'chatbotFlow',
@@ -54,8 +50,17 @@ const chatbotFlow = ai.defineFlow(
         history: [{role: 'system', content: systemPrompt}, ...input.history],
     });
 
+    if (!response || !response.text) {
+        throw new Error("The AI model did not return a valid message.");
+    }
+    
     return {
       message: response.text,
     };
   }
 );
+
+
+export async function chat(input: ChatInput): Promise<ChatOutput> {
+  return chatbotFlow(input);
+}

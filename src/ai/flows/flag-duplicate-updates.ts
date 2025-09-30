@@ -39,12 +39,6 @@ export type FlagDuplicateUpdatesOutput = z.infer<
   typeof FlagDuplicateUpdatesOutputSchema
 >;
 
-export async function flagDuplicateUpdates(
-  input: FlagDuplicateUpdatesInput
-): Promise<FlagDuplicateUpdatesOutput> {
-  return flagDuplicateUpdatesFlow(input);
-}
-
 const flagDuplicateUpdatesPrompt = ai.definePrompt({
   name: 'flagDuplicateUpdatesPrompt',
   input: {schema: FlagDuplicateUpdatesInputSchema},
@@ -83,3 +77,10 @@ const flagDuplicateUpdatesFlow = ai.defineFlow(
     return output;
   }
 );
+
+
+export async function flagDuplicateUpdates(
+  input: FlagDuplicateUpdatesInput
+): Promise<FlagDuplicateUpdatesOutput> {
+  return flagDuplicateUpdatesFlow(input);
+}

@@ -28,9 +28,6 @@ const SummarizeAlertsOutputSchema = z.object({
 });
 export type SummarizeAlertsOutput = z.infer<typeof SummarizeAlertsOutputSchema>;
 
-export async function summarizeAlerts(input: SummarizeAlertsInput): Promise<SummarizeAlertsOutput> {
-  return summarizeAlertsFlow(input);
-}
 
 const summarizeAlertsPrompt = ai.definePrompt({
   name: 'summarizeAlertsPrompt',
@@ -63,3 +60,8 @@ const summarizeAlertsFlow = ai.defineFlow(
     return output;
   }
 );
+
+
+export async function summarizeAlerts(input: SummarizeAlertsInput): Promise<SummarizeAlertsOutput> {
+  return summarizeAlertsFlow(input);
+}

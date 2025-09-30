@@ -26,11 +26,6 @@ const PersonalizedAlertSourceSelectionOutputSchema = z.object({
 
 export type PersonalizedAlertSourceSelectionOutput = z.infer<typeof PersonalizedAlertSourceSelectionOutputSchema>;
 
-export async function personalizedAlertSourceSelection(
-  input: PersonalizedAlertSourceSelectionInput
-): Promise<PersonalizedAlertSourceSelectionOutput> {
-  return personalizedAlertSourceSelectionFlow(input);
-}
 
 const prompt = ai.definePrompt({
   name: 'personalizedAlertSourceSelectionPrompt',
@@ -57,3 +52,10 @@ const personalizedAlertSourceSelectionFlow = ai.defineFlow(
     return output;
   }
 );
+
+
+export async function personalizedAlertSourceSelection(
+  input: PersonalizedAlertSourceSelectionInput
+): Promise<PersonalizedAlertSourceSelectionOutput> {
+  return personalizedAlertSourceSelectionFlow(input);
+}
