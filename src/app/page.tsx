@@ -56,10 +56,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [userSosAlert, setUserSosAlert] = useState<Alert | null>(null);
-  const [sosLocation, setSosLocation] = useState<[number, number] | null>(null);
-  const [sosUserStatus, setSosUserStatus] = useState<UserStatus | null>(null);
-
   useEffect(() => {
     setLoading(true);
 
@@ -98,13 +94,6 @@ export default function DashboardPage() {
             if (!b.timestamp) return -1;
             return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
-
-        if (user) {
-            const currentUserSos = sortedAlerts.find(a => a.createdBy === user.uid && a.severity === 'Critical' && a.rescueStatus !== 'Completed');
-            setUserSosAlert(currentUserSos || null);
-        } else {
-            setUserSosAlert(null);
-        }
 
         setAlerts(sortedAlerts);
         setLoading(false);
@@ -147,41 +136,6 @@ export default function DashboardPage() {
 
   }, [language, t, user]);
 
-  useEffect(() => {
-    let unsubscribe: (() => void) | null = null;
-
-    if (userSosAlert && user) {
-        // Find the location from the alert's affectedAreas
-        const area = userSosAlert.affectedAreas.find(a => a.startsWith('Lat:'));
-        if (area) {
-            const parts = area.split(', ');
-            const lat = parseFloat(parts[0].replace('Lat: ', ''));
-            const lon = parseFloat(parts[1].replace('Lon: ', ''));
-            setSosLocation([lat, lon]);
-        }
-
-        // Fetch the corresponding user_status to display on the map
-        const userStatusQuery = query(collection(db, 'user_status'), where('userId', '==', user.uid), where('status', '==', 'help'), limit(1));
-        unsubscribe = onSnapshot(userStatusQuery, (snapshot) => {
-            if (!snapshot.empty) {
-                const statusDoc = snapshot.docs[0];
-                setSosUserStatus({ id: statusDoc.id, ...statusDoc.data() } as UserStatus);
-            } else {
-                setSosUserStatus(null);
-            }
-        });
-
-    } else {
-        setSosLocation(null);
-        setSosUserStatus(null);
-    }
-    
-    return () => {
-        if(unsubscribe) {
-            unsubscribe();
-        }
-    };
-}, [userSosAlert, user]);
 
   return (
     <div className="space-y-8">
@@ -198,59 +152,6 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      {userSosAlert && (
-          <Card className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-blue-800 dark:text-blue-300">
-                    <LifeBuoy className="h-6 w-6 animate-pulse" />
-                    {t('dashboard_sos_status_title')}
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div>
-                  <p className="text-lg font-semibold">
-                      {userSosAlert.acknowledged ? 
-                       t('dashboard_sos_status_acknowledged').replace('{status}', userSosAlert.rescueStatus || 'Acknowledged') :
-                       t('dashboard_sos_status_awaiting')}
-                  </p>
-                  <p className="text-muted-foreground mt-1">
-                      {userSosAlert.acknowledged ? 
-                       t('dashboard_sos_status_dispatched_desc') : 
-                       t('dashboard_sos_status_awaiting_desc')}
-                  </p>
-                </div>
-
-                {userSosAlert.rescueTeam && (
-                    <div className="flex items-center gap-4 pt-3 border-t border-blue-200 dark:border-blue-700">
-                        <Truck className="h-6 w-6 text-blue-600 dark:text-blue-400"/>
-                        <div>
-                            <p className="font-semibold">{t('dashboard_sos_rescue_team_title').replace('{team}', userSosAlert.rescueTeam)}</p>
-                            {userSosAlert.eta && <p className="text-sm text-muted-foreground">{t('dashboard_sos_rescue_team_eta').replace('{eta}', userSosAlert.eta)}</p>}
-                        </div>
-                    </div>
-                )}
-                
-                {sosLocation && sosUserStatus && (
-                  <div className="pt-3 border-t border-blue-200 dark:border-blue-700">
-                      <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 text-blue-800 dark:text-blue-300">
-                          <MapPin className="h-4 w-4"/>
-                          Your SOS Location
-                      </h4>
-                      <ResourceMap
-                          resources={[]} 
-                          userStatuses={sosUserStatus ? [sosUserStatus] : []} 
-                          resourceNeeds={[]}
-                          damageReports={[]}
-                          center={sosLocation}
-                          zoom={14}
-                          currentUserId={user?.uid}
-                      />
-                  </div>
-                )}
-            </CardContent>
-          </Card>
-      )}
-
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -328,7 +229,7 @@ export default function DashboardPage() {
                 </Card>
               )}
 
-              {!loading && !error && alerts.filter(a => a.id !== userSosAlert?.id).length === 0 && (
+              {!loading && !error && alerts.length === 0 && (
                 <Card className="flex items-center justify-center h-64">
                     <div className="text-center">
                         <CardTitle>{t('dashboard_all_clear_title')}</CardTitle>
@@ -339,7 +240,7 @@ export default function DashboardPage() {
 
               {!loading && !error && alerts.length > 0 && (
                 <div className="grid gap-6 md:grid-cols-2">
-                  {alerts.filter(a => a.id !== userSosAlert?.id).slice(0, 10).map((alert) => (
+                  {alerts.slice(0, 10).map((alert) => (
                     <Card key={alert.id} className={cn("flex flex-col border-l-4", severityStyles[alert.severity].split(' ')[0].replace('bg-','border-'))}>
                       <CardHeader className="pb-2">
                         <div className="flex items-start justify-between">
@@ -431,5 +332,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
