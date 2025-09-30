@@ -41,7 +41,7 @@ const severityOrder: { [key in Alert['severity']]: number } = {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
   const [damageReports, setDamageReports] = useState<any[]>([]); // Using any to avoid type issues with firebase data
@@ -91,7 +91,7 @@ export default function DashboardPage() {
         setLoading(false);
     }, (err) => {
         console.error("Error fetching alerts:", err);
-        setError("Failed to load alerts.");
+        setError(t('error_failed_to_load_alerts'));
         setLoading(false);
     });
 
@@ -110,7 +110,7 @@ export default function DashboardPage() {
         setHelpRequests(requests);
     }, (err) => {
         console.error("Error fetching help requests:", err);
-        setError("Failed to load community help requests.");
+        setError(t('error_failed_to_load_community_requests'));
     });
     
     const reportsQuery = query(collection(db, 'damage_reports'));
@@ -126,20 +126,20 @@ export default function DashboardPage() {
         unsubscribeReports();
     };
 
-  }, [language]);
+  }, [language, t]);
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('dashboard_title')}</h1>
           <p className="text-muted-foreground">
-            Live alerts from officials and immediate needs from the community.
+            {t('dashboard_description')}
           </p>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline"><ListFilter className="mr-2 h-4 w-4"/> Filter</Button>
-            <Button asChild><Link href="/resource-locator"><Map className="mr-2 h-4 w-4"/> Map View</Link></Button>
+            <Button variant="outline"><ListFilter className="mr-2 h-4 w-4"/>{t('dashboard_filter')}</Button>
+            <Button asChild><Link href="/resource-locator"><Map className="mr-2 h-4 w-4"/>{t('dashboard_map_view')}</Link></Button>
         </div>
       </div>
       
@@ -148,26 +148,26 @@ export default function DashboardPage() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-blue-800 dark:text-blue-300">
                     <LifeBuoy className="h-6 w-6 animate-pulse" />
-                    Your SOS Rescue Status
+                    {t('dashboard_sos_status_title')}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
                 <p className="text-lg font-semibold">
                     {userSosAlert.acknowledged ? 
-                     `Status: ${userSosAlert.rescueStatus || 'Acknowledged'}` :
-                     'SOS Sent. Awaiting Acknowledgement.'}
+                     t('dashboard_sos_status_acknowledged').replace('{status}', userSosAlert.rescueStatus || 'Acknowledged') :
+                     t('dashboard_sos_status_awaiting')}
                 </p>
                 <p className="text-muted-foreground mt-1">
                     {userSosAlert.acknowledged ? 
-                     'A rescue team has been notified. Help is on the way.' : 
-                     'Your request has been received. An admin will review it shortly.'}
+                     t('dashboard_sos_status_dispatched_desc') : 
+                     t('dashboard_sos_status_awaiting_desc')}
                 </p>
                 {userSosAlert.rescueTeam && (
                     <div className="flex items-center gap-4 pt-2 border-t border-blue-200 dark:border-blue-700">
                         <Truck className="h-6 w-6 text-blue-600 dark:text-blue-400"/>
                         <div>
-                            <p className="font-semibold">{userSosAlert.rescueTeam} is on the way.</p>
-                            {userSosAlert.eta && <p className="text-sm text-muted-foreground">Estimated arrival: {userSosAlert.eta}</p>}
+                            <p className="font-semibold">{t('dashboard_sos_rescue_team_title').replace('{team}', userSosAlert.rescueTeam)}</p>
+                            {userSosAlert.eta && <p className="text-sm text-muted-foreground">{t('dashboard_sos_rescue_team_eta').replace('{eta}', userSosAlert.eta)}</p>}
                         </div>
                     </div>
                 )}
@@ -179,42 +179,42 @@ export default function DashboardPage() {
             <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                Total Alerts
+                {t('dashboard_total_alerts_title')}
                 </CardTitle>
                 <ShieldAlert className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{loading ? <Skeleton className="h-8 w-12" /> : alerts.length}</div>
                 <p className="text-xs text-muted-foreground">
-                Live and recent alerts
+                {t('dashboard_total_alerts_desc')}
                 </p>
             </CardContent>
             </Card>
             <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                Active Help Requests
+                {t('dashboard_help_requests_title')}
                 </CardTitle>
                 <Users className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold text-destructive">{loading ? <Skeleton className="h-8 w-12" /> : helpRequests.length}</div>
                 <p className="text-xs text-muted-foreground">
-                Users requesting immediate help
+                {t('dashboard_help_requests_desc')}
                 </p>
             </CardContent>
             </Card>
              <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                Damage Reports
+                {t('dashboard_damage_reports_title')}
                 </CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{loading ? <Skeleton className="h-8 w-12" /> : damageReports.length}</div>
                 <p className="text-xs text-muted-foreground">
-                Total damage reports submitted
+                {t('dashboard_damage_reports_desc')}
                 </p>
             </CardContent>
             </Card>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-2xl font-semibold tracking-tight">Live Alerts</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">{t('dashboard_live_alerts_title')}</h2>
              {loading && (
                 <div className="grid gap-6 md:grid-cols-2">
                   {[...Array(2)].map((_, i) => (
@@ -245,7 +245,7 @@ export default function DashboardPage() {
                   <CardHeader className="flex flex-row items-center gap-4">
                     <ServerCrash className="h-8 w-8 text-destructive"/>
                     <div>
-                      <CardTitle className="text-destructive">Failed to Load Data</CardTitle>
+                      <CardTitle className="text-destructive">{t('error_failed_to_load_title')}</CardTitle>
                       <CardDescription className="text-destructive/80">{error}</CardDescription>
                     </div>
                   </CardHeader>
@@ -255,8 +255,8 @@ export default function DashboardPage() {
               {!loading && !error && alerts.filter(a => a.id !== userSosAlert?.id).length === 0 && (
                 <Card className="flex items-center justify-center h-64">
                     <div className="text-center">
-                        <CardTitle>All Clear!</CardTitle>
-                        <CardDescription>There are no active alerts right now.</CardDescription>
+                        <CardTitle>{t('dashboard_all_clear_title')}</CardTitle>
+                        <CardDescription>{t('dashboard_all_clear_desc')}</CardDescription>
                     </div>
                 </Card>
               )}
@@ -282,7 +282,7 @@ export default function DashboardPage() {
                         </p>
                         {alert.affectedAreas && alert.affectedAreas.length > 0 && (
                             <div className="mt-4">
-                                <h4 className="text-xs font-semibold text-muted-foreground mb-2">AFFECTED AREAS</h4>
+                                <h4 className="text-xs font-semibold text-muted-foreground mb-2">{t('dashboard_affected_areas_title')}</h4>
                                 <div className="flex flex-wrap gap-1">
                                     {alert.affectedAreas.map(area => <Badge key={area} variant="secondary">{area}</Badge>)}
                                 </div>
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                        {alert.timestamp && (
                             <div className="px-6 pb-4 flex items-center text-xs text-muted-foreground">
                               <Clock className="mr-1.5 h-3 w-3" />
-                              <span>{formatDistanceToNow(alert.timestamp.toDate())} ago</span>
+                              <span>{t('dashboard_time_ago').replace('{time}', formatDistanceToNow(alert.timestamp.toDate()))}</span>
                             </div>
                         )}
                     </Card>
@@ -302,12 +302,12 @@ export default function DashboardPage() {
           </div>
 
           <div className="lg:col-span-1 space-y-6">
-              <h2 className="text-2xl font-semibold tracking-tight">Community Needs</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">{t('dashboard_community_needs_title')}</h2>
                <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Users className="h-6 w-6 text-primary"/>
-                        Recent Help Requests
+                        {t('dashboard_recent_help_requests_title')}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                          </div>
                     )}
                     {!loading && helpRequests.length === 0 && (
-                        <p className="text-sm text-muted-foreground text-center py-4">No active help requests from the community.</p>
+                        <p className="text-sm text-muted-foreground text-center py-4">{t('dashboard_no_help_requests')}</p>
                     )}
                     {!loading && helpRequests.length > 0 && (
                         <ul className="space-y-4">
@@ -337,7 +337,7 @@ export default function DashboardPage() {
                                     </Avatar>
                                     <div className='flex-1'>
                                         <p className="font-semibold text-sm">{req.userName}</p>
-                                        <p className="text-xs text-destructive font-semibold">Needs Help</p>
+                                        <p className="text-xs text-destructive font-semibold">{t('dashboard_user_needs_help')}</p>
                                     </div>
                                      {req.timestamp && (
                                         <p className="text-xs text-muted-foreground self-start">
