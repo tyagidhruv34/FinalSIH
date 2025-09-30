@@ -13,20 +13,32 @@ export function useStatusUpdater() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState<'safe' | 'help' | null>(null);
 
-  const handleStatusUpdate = async (status: 'safe' | 'help'): Promise<string | null> => {
+  const handleStatusUpdate = async (status: 'safe' | 'help') => {
     if (!user) {
       toast({
         variant: 'destructive',
         title: 'Not Logged In',
         description: 'You must be logged in to update your status.',
       });
-      throw new Error('User not logged in.');
+      return;
     }
 
     setIsSubmitting(status);
 
-    const createAlertWithLocation = async (location: GeoPoint | null) => {
-      let alertId: string | null = null;
+    try {
+      const location = await new Promise<GeoPoint | null>((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve(new GeoPoint(position.coords.latitude, position.coords.longitude));
+          },
+          (error) => {
+            console.warn('Could not get location: ', error.message);
+            resolve(null);
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+
       if (status === 'help') {
         const lat = location?.latitude.toFixed(4);
         const lon = location?.longitude.toFixed(4);
@@ -34,14 +46,12 @@ export function useStatusUpdater() {
           ? `at location: ${lat}, ${lon}`
           : 'at an unknown location';
 
-        alertId = await AlertService.createAlert({
+        await AlertService.createAlert({
           title: `SOS: Help request from ${user.displayName || 'a user'}`,
           description: `A user has requested immediate assistance ${locationString}.`,
           severity: 'Critical',
           type: 'Other',
-          affectedAreas: location
-            ? [`Lat: ${lat}, Lon: ${lon}`]
-            : ['Location not available'],
+          affectedAreas: location ? [`Lat: ${lat}, Lon: ${lon}`] : ['Location not available'],
           createdBy: user.uid,
           acknowledged: false,
           rescueStatus: null,
@@ -59,30 +69,18 @@ export function useStatusUpdater() {
 
       toast({
         title: 'Status Updated',
-        description: `You've been marked as ${status}. Your location has ${
-          location ? '' : 'not '
-        }been shared.`,
+        description: `You've been marked as ${status}. Your location has ${location ? '' : 'not '}been shared.`,
       });
-      return alertId;
-    };
 
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        });
+    } catch (error) {
+      console.error("Error during status update:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: 'Could not update your status. Please try again.',
       });
-      
-      const { latitude, longitude } = position.coords;
-      const geoPoint = new GeoPoint(latitude, longitude);
-      return await createAlertWithLocation(geoPoint);
-
-    } catch (error: any) {
-      console.warn('Could not get location: ', error.message);
-      return await createAlertWithLocation(null);
     } finally {
+      // This will run regardless of success or failure, ensuring the button resets.
       setIsSubmitting(null);
     }
   };
