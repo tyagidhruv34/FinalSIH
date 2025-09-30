@@ -32,13 +32,14 @@ import { Badge } from '@/components/ui/badge';
 import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle } from 'lucide-react';
+import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle, ShieldX } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Timestamp, collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { resources } from '@/lib/data';
+import { ADMIN_USER_IDS } from '@/lib/config';
 
 
 const ResourceMap = dynamic(() => import('@/components/resource-map'), { 
@@ -66,6 +67,7 @@ export default function AdminAlertPage() {
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const { control, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<AlertFormValues>({
     resolver: zodResolver(alertFormSchema),
@@ -83,10 +85,18 @@ export default function AdminAlertPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-        router.push('/login');
-        return;
+      router.push('/login');
+      return;
     }
-
+    
+    // Check for admin authorization
+    if (!ADMIN_USER_IDS.includes(user.uid)) {
+      setIsAuthorized(false);
+      router.push('/'); // Redirect non-admins to home page
+      return;
+    }
+    
+    setIsAuthorized(true);
     setIsLoading(true);
 
     const alertsQuery = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'));
@@ -129,14 +139,29 @@ export default function AdminAlertPage() {
     };
 
   }, [user, loading, router, toast]);
+  
 
-  if (loading || isLoading) {
-    return <p>Loading...</p>;
+  if (loading || !isAuthorized) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-10rem)]">
+            <Card className="p-8 text-center">
+                {loading ? (
+                    <>
+                        <Loader2 className="animate-spin h-10 w-10 mx-auto mb-4"/>
+                        <p>Verifying access...</p>
+                    </>
+                ) : (
+                    <>
+                        <ShieldX className="h-12 w-12 text-destructive mx-auto mb-4"/>
+                        <CardTitle>Access Denied</CardTitle>
+                        <CardDescription className="mt-2">You do not have permission to view this page.</CardDescription>
+                    </>
+                )}
+            </Card>
+        </div>
+    );
   }
 
-  if (!user) {
-    return null;
-  }
   
   const onSubmit = async (data: AlertFormValues) => {
     setIsSubmitting(true);
@@ -497,7 +522,3 @@ export default function AdminAlertPage() {
     </div>
   );
 }
-
-    
-
-    
