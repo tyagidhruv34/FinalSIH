@@ -26,12 +26,15 @@ export default function Chatbot() {
     if (!input.trim()) return;
 
     const userMessage: Message = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
     try {
-      const chatHistory = messages.map(m => ({ role: m.role, content: m.content }));
+      // Pass the up-to-date history, excluding the latest user message which is passed separately
+      const chatHistory = newMessages.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
       
       const result = await chat({
         history: chatHistory,
