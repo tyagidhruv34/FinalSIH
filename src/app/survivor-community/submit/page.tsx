@@ -39,6 +39,12 @@ export default function SubmitStoryPage() {
 
   const { control, handleSubmit, formState: { errors } } = useForm<StoryFormValues>({
     resolver: zodResolver(storyFormSchema),
+    defaultValues: {
+      title: '',
+      story: '',
+      heroName: '',
+      heroContact: '',
+    },
   });
 
   if (authLoading) return <p>Loading...</p>;
