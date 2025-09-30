@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle, ShieldX } from 'lucide-react';
+import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle, ShieldX, Loader2 } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Timestamp, collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
@@ -189,7 +189,7 @@ export default function AdminAlertPage() {
   };
 
   const handleDeleteAlert = async (alertId: string) => {
-    if (!window.confirm("Are you sure you want to delete this alert?")) return;
+    if (!window.confirm("Are you sure you want to delete this alert? This action cannot be undone.")) return;
 
     try {
       await AlertService.deleteAlert(alertId);
@@ -267,7 +267,7 @@ export default function AdminAlertPage() {
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{helpRequests.length}</div>
+            <div className="text-2xl font-bold text-destructive">{alerts.filter(a => a.severity === 'Critical').length}</div>
             <p className="text-xs text-muted-foreground">
               Users actively requesting help
             </p>
@@ -444,7 +444,7 @@ export default function AdminAlertPage() {
                 {isLoading ? (
                     <p>Loading alerts...</p>
                 ) : alerts.length === 0 ? (
-                    <p>No alerts have been sent yet.</p>
+                    <div className="text-center text-muted-foreground p-8">No alerts have been sent yet.</div>
                 ) : (
                     <div className="max-h-[400px] overflow-y-auto">
                         <Table>
@@ -459,8 +459,13 @@ export default function AdminAlertPage() {
                             </TableHeader>
                             <TableBody>
                                 {alerts.map((alert) => (
-                                    <TableRow key={alert.id}>
-                                        <TableCell className="font-medium">{alert.title}</TableCell>
+                                    <TableRow key={alert.id} className={alert.severity === 'Critical' ? 'bg-destructive/5' : ''}>
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-2">
+                                                {alert.severity === 'Critical' && <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0"/>}
+                                                <span>{alert.title}</span>
+                                            </div>
+                                        </TableCell>
                                         <TableCell><Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'}>{alert.severity}</Badge></TableCell>
                                         <TableCell><div className="flex flex-wrap gap-1 max-w-xs">{alert.affectedAreas.map(area => <Badge key={area} variant="outline">{area}</Badge>)}</div></TableCell>
                                         <TableCell>{alert.timestamp ? format(alert.timestamp.toDate(), 'PPP p') : 'Just now'}</TableCell>
@@ -494,7 +499,7 @@ export default function AdminAlertPage() {
                 {isLoading ? (
                     <p>Loading chart data...</p>
                 ) : damageSeverityData.length === 0 ? (
-                    <p>No damage reports have been submitted yet.</p>
+                    <div className="text-center text-muted-foreground p-8">No damage reports have been submitted yet.</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={damageSeverityData}>
@@ -522,3 +527,5 @@ export default function AdminAlertPage() {
     </div>
   );
 }
+
+    
