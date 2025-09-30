@@ -31,7 +31,11 @@ export default function StatusUpdatesPage() {
   
   const onStatusUpdate = async (status: 'safe' | 'help') => {
       await handleStatusUpdate(status);
-      router.push('/');
+      if (status === 'help') {
+        router.push('/resource-locator');
+      } else {
+        router.push('/');
+      }
   }
 
 
