@@ -33,7 +33,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useStatusUpdater } from "@/hooks/use-status-updater";
-import { Loader2, Mic, MicOff } from "lucide-react";
+import { Loader2, Mic, MicOff, PlayCircle } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
 import { useToast } from "@/hooks/use-toast";
@@ -85,15 +85,23 @@ export default function Header() {
         handleSos();
     }
   };
+  
+  const handleSos = async () => {
+    await handleStatusUpdate('help');
+    router.push('/');
+  }
 
   const { isListening, isSupported, startListening, stopListening } = useVoiceRecognition({
     onCommand: handleVoiceCommand,
     onError: (error) => {
-        toast({
-            variant: "destructive",
-            title: "Voice Error",
-            description: `Could not start voice recognition: ${error}`,
-        });
+        // Don't show toast for "not-allowed" which happens if user denies mic permission
+        if (error !== 'not-allowed' && error !== 'no-speech') {
+             toast({
+                variant: "destructive",
+                title: "Voice Error",
+                description: `Could not start voice recognition: ${error}`,
+            });
+        }
     }
   });
 
@@ -103,25 +111,27 @@ export default function Header() {
     router.push('/login');
   }
   
-  const handleSos = async () => {
-    await handleStatusUpdate('help');
-    router.push('/');
-  }
-  
   const toggleListening = () => {
-      if (!isSupported) {
-           toast({
-            variant: "destructive",
-            title: "Unsupported Browser",
-            description: "Voice recognition is not supported in your browser.",
-        });
-        return;
-      }
       if (isListening) {
           stopListening();
       } else {
           startListening();
       }
+  }
+  
+  const handleDemo = () => {
+    toast({
+        title: "Voice Demo Started",
+        description: "Simulating: Now say 'save me'.",
+    });
+
+    setTimeout(() => {
+       toast({
+           title: "Command 'save me' recognized!",
+           description: "Sending SOS...",
+       });
+       handleSos();
+    }, 2500);
   }
 
 
@@ -162,14 +172,20 @@ export default function Header() {
       
       <div className="flex items-center gap-2">
         {user && isSupported && (
-            <Button variant="outline" size="icon" onClick={toggleListening} className={isListening ? 'text-destructive border-destructive' : ''}>
+            <Button variant="outline" size="icon" onClick={toggleListening} className={isListening ? 'text-destructive border-destructive animate-pulse' : ''}>
                 {isListening ? <MicOff /> : <Mic />}
                 <span className="sr-only">Toggle Voice Commands</span>
             </Button>
         )}
+        {user && !isSupported && (
+            <Button variant="outline" onClick={handleDemo}>
+                <PlayCircle className="mr-2"/>
+                Voice Demo
+            </Button>
+        )}
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button size="lg" variant="destructive" disabled={!user || !!isSubmitting} className="font-semibold shadow-sm hover:bg-destructive/90">
+            <Button size="lg" variant="destructive" disabled={!user || !!isSubmitting} className="h-12 text-base font-semibold shadow-md hover:bg-destructive/90">
               {isSubmitting ? (
                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
