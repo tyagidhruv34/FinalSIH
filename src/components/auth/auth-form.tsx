@@ -155,7 +155,7 @@ export default function AuthForm() {
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="password-signup">Password</Label>
-                    <Input id="password-signup" type="password" placeholder="Min. 6 characters" value={password} onChange={e => setPassword(e.g.target.value)} required />
+                    <Input id="password-signup" type="password" placeholder="Min. 6 characters" value={password} onChange={e => setPassword(e.target.value)} required />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                      {loading && <Loader2 className="mr-2 animate-spin" />}
@@ -168,5 +168,3 @@ export default function AuthForm() {
     </div>
   );
 }
-
-    
