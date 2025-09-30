@@ -161,7 +161,7 @@ export default function Header() {
       </div>
       
       <div className="flex items-center gap-2">
-        {user && isSupported && (
+        {user && (
             <Button variant="outline" size="icon" onClick={toggleListening} className={isListening ? 'text-destructive border-destructive' : ''}>
                 {isListening ? <MicOff /> : <Mic />}
                 <span className="sr-only">Toggle Voice Commands</span>
