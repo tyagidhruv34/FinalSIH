@@ -82,7 +82,9 @@ export default function Header() {
     const lowerCaseCommand = command.toLowerCase();
     if (lowerCaseCommand.includes('save me')) {
         toast({ title: "Voice command recognized", description: "Sending SOS..." });
-        handleSos();
+        handleStatusUpdate('help').then(() => {
+          router.push('/');
+        });
     }
   };
   

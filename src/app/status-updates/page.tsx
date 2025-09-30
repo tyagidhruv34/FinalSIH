@@ -32,13 +32,7 @@ export default function StatusUpdatesPage() {
   
   const onStatusUpdate = async (status: 'safe' | 'help') => {
       await handleStatusUpdate(status);
-      if (status === 'help') {
-        // Redirect to community map for immediate visual feedback of their SOS
-        router.push('/resource-locator');
-      } else {
-        // Redirect to dashboard for "safe" status
-        router.push('/');
-      }
+      router.push('/');
   }
 
 
