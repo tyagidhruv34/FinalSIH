@@ -8,6 +8,7 @@ import type { Resource, UserStatus, ResourceNeed, DamageReport } from "@/lib/typ
 import * as icons from "lucide-react";
 import { UserCheck, AlertTriangle, PackageOpen, Building2, User as UserIcon } from "lucide-react";
 import ReactDOMServer from 'react-dom/server';
+import { cn } from '@/lib/utils';
 
 // This is a workaround for a known issue with react-leaflet and Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -26,6 +27,7 @@ type ResourceMapProps = {
   center?: [number, number];
   zoom?: number;
   currentUserId?: string;
+  className?: string;
 };
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
@@ -91,7 +93,7 @@ const getResourceMarkerIcon = (resource: Resource) => {
     );
 };
 
-export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [], damageReports = [], center = [28.6139, 77.2090], zoom = 11, currentUserId }: ResourceMapProps) {
+export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [], damageReports = [], center = [28.6139, 77.2090], zoom = 11, currentUserId, className }: ResourceMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
@@ -180,6 +182,6 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
 
 
   return (
-    <div id="map" ref={mapContainerRef} className="h-[500px] w-full rounded-lg overflow-hidden border" />
+    <div id="map" ref={mapContainerRef} className={cn("h-[500px] w-full rounded-lg overflow-hidden border", className)} />
   );
 }

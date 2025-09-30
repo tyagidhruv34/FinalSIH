@@ -85,7 +85,8 @@ export default function ResourceLocatorPage() {
                 resources={resources} 
                 userStatuses={userStatuses} 
                 resourceNeeds={resourceNeeds}
-                currentUserId={user?.uid} 
+                currentUserId={user?.uid}
+                className="min-h-[600px] lg:min-h-0"
             />
         </div>
         <div className="lg:col-span-1">
@@ -100,7 +101,7 @@ export default function ResourceLocatorPage() {
                     <CardTitle>Nearby Resources</CardTitle>
                     </CardHeader>
                     <CardContent>
-                    <ul className="space-y-4 max-h-[400px] overflow-y-auto">
+                    <ul className="space-y-4 max-h-[500px] overflow-y-auto">
                         {resources.map((resource) => (
                         <li key={resource.id} className="flex items-start gap-4">
                             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -137,7 +138,7 @@ export default function ResourceLocatorPage() {
                                 <p className="mt-4">No active resource requests.</p>
                              </div>
                         ) : (
-                            <ul className="space-y-4 max-h-[400px] overflow-y-auto">
+                            <ul className="space-y-4 max-h-[500px] overflow-y-auto">
                                 {resourceNeeds.map((need) => (
                                 <li key={need.id} className="flex items-start gap-4">
                                     <div className={`mt-1 flex h-8 w-8 items-center justify-center rounded-lg ${need.urgency === 'High' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-secondary-foreground'}`}>
