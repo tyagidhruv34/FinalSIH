@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Alert, UserStatus } from '@/lib/types';
+import type { Alert, UserStatus, ResourceNeed } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,8 @@ import { Building2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/hooks/use-language';
 import dynamic from 'next/dynamic';
+import { resources } from '@/lib/data';
+
 
 const ResourceMap = dynamic(() => import('@/components/resource-map'), { 
     ssr: false,
@@ -51,10 +53,13 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { language, t } = useLanguage();
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
+  const [userStatuses, setUserStatuses] = useState<UserStatus[]>([]);
+  const [resourceNeeds, setResourceNeeds] = useState<ResourceNeed[]>([]);
   const [damageReports, setDamageReports] = useState<any[]>([]); // Using any to avoid type issues with firebase data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const helpRequests = userStatuses.filter(s => s.status === 'help');
 
   useEffect(() => {
     setLoading(true);
@@ -102,23 +107,23 @@ export default function DashboardPage() {
         setError(t('error_failed_to_load_alerts'));
         setLoading(false);
     });
-
-    const helpRequestQuery = query(
-        collection(db, 'user_status'), 
-        where('status', '==', 'help'),
-        orderBy('timestamp', 'desc'),
-        limit(5)
-    );
-
-    const unsubscribeHelpRequests = onSnapshot(helpRequestQuery, (querySnapshot) => {
-        const requests: UserStatus[] = [];
+    
+    const userStatusQuery = collection(db, 'user_status');
+    const unsubscribeUserStatuses = onSnapshot(userStatusQuery, (querySnapshot) => {
+        const statuses: UserStatus[] = [];
         querySnapshot.forEach((doc) => {
-            requests.push({ id: doc.id, ...doc.data() } as UserStatus);
+            statuses.push({ id: doc.id, ...doc.data() } as UserStatus);
         });
-        setHelpRequests(requests);
-    }, (err) => {
-        console.error("Error fetching help requests:", err);
-        setError(t('error_failed_to_load_community_requests'));
+        setUserStatuses(statuses);
+    });
+
+    const resourceNeedsQuery = query(collection(db, 'resource_needs'), where('fulfilled', '==', false));
+    const unsubscribeResourceNeeds = onSnapshot(resourceNeedsQuery, (querySnapshot) => {
+        const needs: ResourceNeed[] = [];
+        querySnapshot.forEach((doc) => {
+            needs.push({ id: doc.id, ...doc.data() } as ResourceNeed);
+        });
+        setResourceNeeds(needs);
     });
     
     const reportsQuery = query(collection(db, 'damage_reports'));
@@ -130,7 +135,8 @@ export default function DashboardPage() {
 
     return () => {
         unsubscribeAlerts();
-        unsubscribeHelpRequests();
+        unsubscribeUserStatuses();
+        unsubscribeResourceNeeds();
         unsubscribeReports();
     };
 
@@ -194,6 +200,20 @@ export default function DashboardPage() {
                 {t('dashboard_damage_reports_desc')}
                 </p>
             </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        Resource Requests
+                    </CardTitle>
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{loading ? <Skeleton className="h-8 w-12" /> : resourceNeeds.length}</div>
+                    <p className="text-xs text-muted-foreground">
+                        Active requests for food, water, etc.
+                    </p>
+                </CardContent>
             </Card>
         </div>
 
@@ -280,6 +300,25 @@ export default function DashboardPage() {
 
           <div className="lg:col-span-1 space-y-6">
               <h2 className="text-2xl font-semibold tracking-tight">{t('dashboard_community_needs_title')}</h2>
+              
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <MapPin className="h-6 w-6 text-primary"/>
+                            Live Incident Map
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ResourceMap
+                            resources={resources}
+                            userStatuses={userStatuses}
+                            resourceNeeds={resourceNeeds}
+                            damageReports={damageReports}
+                            currentUserId={user?.uid}
+                        />
+                    </CardContent>
+                </Card>
+              
                <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -332,7 +371,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    
