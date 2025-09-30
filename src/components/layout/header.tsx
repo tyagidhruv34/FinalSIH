@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -31,11 +30,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useStatusUpdater } from "@/hooks/use-status-updater";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mic, MicOff } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
+import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+
 
 const navItems = [
   { href: "/", label: "nav_dashboard", icon: "LayoutDashboard" },
@@ -74,6 +76,27 @@ export default function Header() {
   const router = useRouter();
   const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
   const { t } = useLanguage();
+  const [isSosDialogOpen, setIsSosDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleVoiceCommand = (command: string) => {
+    const lowerCaseCommand = command.toLowerCase();
+    if (lowerCaseCommand.includes('help') || lowerCaseCommand.includes('sos')) {
+      setIsSosDialogOpen(true);
+    }
+  };
+
+  const { isListening, isSupported, startListening, stopListening } = useVoiceRecognition({
+    onCommand: handleVoiceCommand,
+    onError: (error) => {
+        toast({
+            variant: "destructive",
+            title: "Voice Error",
+            description: `Could not start voice recognition: ${error}`,
+        });
+    }
+  });
+
 
   const handleSignOut = async () => {
     await signOut();
@@ -84,6 +107,23 @@ export default function Header() {
     await handleStatusUpdate('help');
     router.push('/');
   }
+  
+  const toggleListening = () => {
+      if (!isSupported) {
+           toast({
+            variant: "destructive",
+            title: "Unsupported Browser",
+            description: "Voice recognition is not supported in your browser.",
+        });
+        return;
+      }
+      if (isListening) {
+          stopListening();
+      } else {
+          startListening();
+      }
+  }
+
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:justify-end">
@@ -120,8 +160,14 @@ export default function Header() {
         </Sheet>
       </div>
       
-      <div className="flex items-center gap-4">
-        <AlertDialog>
+      <div className="flex items-center gap-2">
+        {user && isSupported && (
+            <Button variant="outline" size="icon" onClick={toggleListening} className={isListening ? 'text-destructive border-destructive' : ''}>
+                {isListening ? <MicOff /> : <Mic />}
+                <span className="sr-only">Toggle Voice Commands</span>
+            </Button>
+        )}
+        <AlertDialog open={isSosDialogOpen} onOpenChange={setIsSosDialogOpen}>
           <AlertDialogTrigger asChild>
             <Button size="lg" variant="destructive" disabled={!user || !!isSubmitting} className="font-semibold shadow-sm hover:bg-destructive/90">
               {isSubmitting ? (
@@ -188,3 +234,5 @@ export default function Header() {
     </header>
   );
 }
+
+    
