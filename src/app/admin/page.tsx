@@ -30,13 +30,22 @@ import { AlertService } from '@/lib/firebase/alerts';
 import { DamageReportService } from '@/lib/firebase/damage-reports';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import type { Alert, DamageReport } from '@/lib/types';
+import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { Trash2, ShieldAlert, BarChart3, Building2, CheckCircle } from 'lucide-react';
+import { Trash2, ShieldAlert, BarChart3, Building2, CheckCircle, MapPin, AlertTriangle } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
-import { Timestamp, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { Timestamp, collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+import { resources } from '@/lib/data';
+
+
+const ResourceMap = dynamic(() => import('@/components/resource-map'), { 
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full rounded-lg" />
+});
 
 
 const alertFormSchema = z.object({
@@ -56,6 +65,7 @@ export default function AdminAlertPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
+  const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const { control, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<AlertFormValues>({
@@ -99,10 +109,24 @@ export default function AdminAlertPage() {
         console.error("Error fetching damage reports: ", error);
         toast({ title: "Error", description: "Failed to fetch damage reports.", variant: "destructive" });
     });
+    
+    const helpRequestQuery = query(
+        collection(db, 'user_status'), 
+        where('status', '==', 'help'),
+        orderBy('timestamp', 'desc')
+    );
+    const unsubscribeHelp = onSnapshot(helpRequestQuery, (snapshot) => {
+        const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserStatus));
+        setHelpRequests(requests);
+    }, (err) => {
+        console.error("Error fetching help requests:", err);
+    });
+
 
     return () => {
         unsubscribeAlerts();
         unsubscribeReports();
+        unsubscribeHelp();
     };
 
   }, [user, loading, router, toast]);
@@ -185,6 +209,12 @@ export default function AdminAlertPage() {
     return acc;
   }, [] as { name: string; total: number }[]);
 
+  const mapCenter = helpRequests.length > 0 && helpRequests[0].location
+    ? [helpRequests[0].location.latitude, helpRequests[0].location.longitude] as [number, number]
+    : damageReports.length > 0 && damageReports[0].location
+    ? [damageReports[0].location.latitude, damageReports[0].location.longitude] as [number, number]
+    : [28.6139, 77.2090] as [number, number];
+
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -208,6 +238,20 @@ export default function AdminAlertPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
+              Active SOS
+            </CardTitle>
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{helpRequests.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Users actively requesting help
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Damage Reports
             </CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -222,7 +266,7 @@ export default function AdminAlertPage() {
       </div>
       
       <div className="grid gap-8 lg:grid-cols-5">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
             <form onSubmit={handleSubmit(onSubmit)}>
               <Card>
                 <CardHeader>
@@ -344,88 +388,113 @@ export default function AdminAlertPage() {
             </form>
         </div>
         
-        <div className="lg:col-span-3 grid grid-cols-1 gap-8">
-            <Card>
+        <div className="lg:col-span-2 grid grid-cols-1 gap-8">
+             <Card>
                 <CardHeader>
-                    <CardTitle>Sent Alerts</CardTitle>
-                    <CardDescription>A list of all alerts that have been sent out.</CardDescription>
+                    <CardTitle className="flex items-center gap-2">
+                        <MapPin />
+                        Incidents Map
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
-                        <p>Loading alerts...</p>
-                    ) : alerts.length === 0 ? (
-                        <p>No alerts have been sent yet.</p>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Severity</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {alerts.map((alert) => (
-                                    <TableRow key={alert.id}>
-                                        <TableCell className="font-medium">{alert.title}</TableCell>
-                                        <TableCell><Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'}>{alert.severity}</Badge></TableCell>
-                                        <TableCell>{alert.timestamp ? format(alert.timestamp.toDate(), 'PPP p') : 'Just now'}</TableCell>
-                                        <TableCell className="text-right space-x-1">
-                                            {alert.severity === 'Critical' && !alert.acknowledged && (
-                                                <Button variant="outline" size="sm" onClick={() => handleAcknowledge(alert.id)}>
-                                                    Acknowledge
-                                                </Button>
-                                            )}
-                                            {alert.acknowledged && (
-                                                <Badge variant="secondary"><CheckCircle className="h-4 w-4 mr-1 text-green-600"/> Acknowledged</Badge>
-                                            )}
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteAlert(alert.id)}>
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Damage Report Severity</CardTitle>
-                    <CardDescription>Breakdown of submitted damage reports by AI-assessed severity.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <p>Loading chart data...</p>
-                    ) : damageSeverityData.length === 0 ? (
-                        <p>No damage reports have been submitted yet.</p>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={damageSeverityData}>
-                          <XAxis
-                            dataKey="name"
-                            stroke="#888888"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                          />
-                          <YAxis
-                            stroke="#888888"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            allowDecimals={false}
-                          />
-                          <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    )}
+                     <ResourceMap 
+                        resources={resources as Resource[]} 
+                        userStatuses={helpRequests} 
+                        resourceNeeds={[]} 
+                        damageReports={damageReports}
+                        center={mapCenter}
+                        zoom={10}
+                    />
                 </CardContent>
             </Card>
         </div>
       </div>
+      
+      <div className="grid grid-cols-1 gap-8">
+         <Card>
+            <CardHeader>
+                <CardTitle>Sent Alerts</CardTitle>
+                <CardDescription>A list of all alerts that have been sent out, including SOS signals.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <p>Loading alerts...</p>
+                ) : alerts.length === 0 ? (
+                    <p>No alerts have been sent yet.</p>
+                ) : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Severity</TableHead>
+                                <TableHead>Location/Area</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {alerts.map((alert) => (
+                                <TableRow key={alert.id}>
+                                    <TableCell className="font-medium">{alert.title}</TableCell>
+                                    <TableCell><Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'}>{alert.severity}</Badge></TableCell>
+                                    <TableCell><div className="flex flex-wrap gap-1 max-w-xs">{alert.affectedAreas.map(area => <Badge key={area} variant="outline">{area}</Badge>)}</div></TableCell>
+                                    <TableCell>{alert.timestamp ? format(alert.timestamp.toDate(), 'PPP p') : 'Just now'}</TableCell>
+                                    <TableCell className="text-right space-x-1">
+                                        {alert.severity === 'Critical' && !alert.acknowledged && (
+                                            <Button variant="outline" size="sm" onClick={() => handleAcknowledge(alert.id)}>
+                                                Acknowledge
+                                            </Button>
+                                        )}
+                                        {alert.acknowledged && (
+                                            <Badge variant="secondary"><CheckCircle className="h-4 w-4 mr-1 text-green-600"/> {alert.rescueStatus || 'Acknowledged'}</Badge>
+                                        )}
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteAlert(alert.id)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Damage Report Severity</CardTitle>
+                <CardDescription>Breakdown of submitted damage reports by AI-assessed severity.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <p>Loading chart data...</p>
+                ) : damageSeverityData.length === 0 ? (
+                    <p>No damage reports have been submitted yet.</p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={damageSeverityData}>
+                      <XAxis
+                        dataKey="name"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+            </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+
+    
