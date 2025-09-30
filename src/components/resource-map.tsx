@@ -36,13 +36,13 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
   return <Icon {...props} />;
 };
 
-const createMarkerIcon = (icon: React.ReactElement) => {
+const createMarkerIcon = (icon: React.ReactElement, size: [number, number] = [32, 32]) => {
     return L.divIcon({
         html: ReactDOMServer.renderToString(icon),
         className: 'bg-transparent border-0',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32],
+        iconSize: size,
+        iconAnchor: [size[0]/2, size[1]],
+        popupAnchor: [0, -size[1]],
     });
 };
 
@@ -58,11 +58,12 @@ const userHelpIcon = createMarkerIcon(
 );
 const currentUserHelpIcon = createMarkerIcon(
     <div className="relative flex items-center justify-center">
-        <div className="absolute w-8 h-8 rounded-full bg-blue-500 animate-ping"></div>
-        <div className="relative w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer shadow-lg">
-            <UserIcon className="h-5 w-5 text-white" />
+        <div className="absolute w-10 h-10 rounded-full bg-blue-500 animate-ping"></div>
+        <div className="relative w-10 h-10 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center cursor-pointer shadow-lg">
+            <UserIcon className="h-6 w-6 text-white" />
         </div>
-    </div>
+    </div>,
+    [40, 40]
 );
 
 const needLowUrgencyIcon = createMarkerIcon(
@@ -146,10 +147,10 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
 
           if (isCurrentUser && isHelp) {
               icon = currentUserHelpIcon;
-              popupContent = `<p class="font-bold text-blue-600">You are here</p><p>Status: <span class="text-red-600 font-semibold">${status.status}</span></p>`;
+              popupContent = `<p class="font-bold text-blue-600">You Are Here (SOS)</p><p>Status: <span class="font-semibold">${status.status}</span></p>`;
           } else if (isHelp) {
               icon = userHelpIcon;
-              popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-red-600">${status.status}</span></p>`;
+              popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-red-600 font-semibold">${status.status}</span></p>`;
           } else {
               icon = userSafeIcon;
               popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-green-600">${status.status}</span></p>`;
