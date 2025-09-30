@@ -20,6 +20,9 @@ import { collection, onSnapshot, query, where, orderBy, limit } from 'firebase/f
 import { db } from '@/lib/firebase/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { Building2, ShieldAlert } from 'lucide-react';
+import { DamageReportService } from '@/lib/firebase/damage-reports';
+import type { DamageReport } from '@/lib/types';
 
 const severityStyles: { [key in Alert['severity']]: string } = {
   "Critical": "border-accent text-accent-foreground bg-accent/10",
@@ -39,6 +42,7 @@ const severityOrder: { [key in Alert['severity']]: number } = {
 export default function DashboardPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
+  const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,9 +61,10 @@ export default function DashboardPage() {
             fetchedAlerts.push({ id: doc.id, ...doc.data() } as Alert);
         });
         const sortedAlerts = fetchedAlerts.sort((a, b) => {
-            if (!a.timestamp || !b.timestamp) return 0;
             const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
             if (severityDiff !== 0) return severityDiff;
+            if (!a.timestamp) return 1; // Put alerts without timestamp (i.e. new SOS) at the top
+            if (!b.timestamp) return -1;
             return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
         setAlerts(sortedAlerts);
@@ -87,11 +92,19 @@ export default function DashboardPage() {
         console.error("Error fetching help requests:", err);
         setError("Failed to load community help requests.");
     });
+    
+    // Fetch damage reports for the stats card
+    const reportsQuery = query(collection(db, 'damage_reports'));
+    const unsubscribeReports = onSnapshot(reportsQuery, (snapshot) => {
+        const fetchedReports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DamageReport));
+        setDamageReports(fetchedReports);
+    });
 
 
     return () => {
         unsubscribeAlerts();
         unsubscribeHelpRequests();
+        unsubscribeReports();
     };
 
   }, []);
@@ -111,6 +124,51 @@ export default function DashboardPage() {
         </div>
       </div>
       
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                Total Alerts
+                </CardTitle>
+                <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{loading ? <Skeleton className="h-8 w-12" /> : alerts.length}</div>
+                <p className="text-xs text-muted-foreground">
+                Live and recent alerts
+                </p>
+            </CardContent>
+            </Card>
+            <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                Active Help Requests
+                </CardTitle>
+                <Users className="h-4 w-4 text-destructive" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold text-destructive">{loading ? <Skeleton className="h-8 w-12" /> : helpRequests.length}</div>
+                <p className="text-xs text-muted-foreground">
+                Users requesting immediate help
+                </p>
+            </CardContent>
+            </Card>
+             <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                Damage Reports
+                </CardTitle>
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{loading ? <Skeleton className="h-8 w-12" /> : damageReports.length}</div>
+                <p className="text-xs text-muted-foreground">
+                Total damage reports submitted
+                </p>
+            </CardContent>
+            </Card>
+        </div>
+
       <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <h2 className="text-2xl font-semibold tracking-tight">Live Alerts</h2>
