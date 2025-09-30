@@ -1,3 +1,4 @@
+
 // src/components/auth/auth-form.tsx
 "use client";
 
@@ -69,12 +70,16 @@ export default function AuthForm() {
             switch(error.code) {
                 case 'auth/email-already-in-use':
                     friendlyMessage = 'This email is already in use. Please sign in instead.';
+                    setActiveTab('signin'); // Switch to sign-in tab
                     break;
                 case 'auth/invalid-email':
                     friendlyMessage = 'Please enter a valid email address.';
                     break;
                 case 'auth/weak-password':
                     friendlyMessage = 'The password is too weak. Please use at least 6 characters.';
+                    break;
+                case 'auth/operation-not-allowed':
+                    friendlyMessage = 'Sign in with email/password is not enabled. Please contact support.';
                     break;
                 case 'auth/user-not-found':
                 case 'auth/wrong-password':
