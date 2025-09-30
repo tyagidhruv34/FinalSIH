@@ -19,7 +19,7 @@ const educationalVideos = [
   },
   {
     title: "Fire Extinguisher Training Video (P.A.S.S.)",
-    src: "https://www.youtube.com/embed/BLjoWjCoT7g",
+    src: "https://www.youtube.com/embed/GVBamXXVD30",
   },
   {
     title: "Build an Emergency Kit",
