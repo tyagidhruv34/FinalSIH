@@ -4,6 +4,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider, 
   signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
   signOut as firebaseSignOut,
   RecaptchaVerifier,
@@ -61,7 +62,8 @@ export const createUserProfileDocument = async (user: User, additionalData: { di
 
 
 export const signInWithGoogle = async () => {
-    await signInWithRedirect(auth, googleProvider);
+    const result = await signInWithPopup(auth, googleProvider);
+    await createUserProfileDocument(result.user);
 };
 
 export const signUpWithEmail = async (email: string, password: string, displayName: string) => {
