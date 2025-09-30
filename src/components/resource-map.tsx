@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { useEffect, useRef } from 'react';
 import type { Resource, UserStatus, ResourceNeed, DamageReport } from "@/lib/types";
 import * as icons from "lucide-react";
-import { UserCheck, AlertTriangle, PackageOpen, Building2 } from "lucide-react";
+import { UserCheck, AlertTriangle, PackageOpen, Building2, User as UserIcon } from "lucide-react";
 import ReactDOMServer from 'react-dom/server';
 
 // This is a workaround for a known issue with react-leaflet and Next.js
@@ -25,6 +25,7 @@ type ResourceMapProps = {
   damageReports?: DamageReport[];
   center?: [number, number];
   zoom?: number;
+  currentUserId?: string;
 };
 
 const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => {
@@ -55,6 +56,14 @@ const userHelpIcon = createMarkerIcon(
         <AlertTriangle className="h-5 w-5 text-white" />
     </div>
 );
+const currentUserHelpIcon = createMarkerIcon(
+    <div className="relative flex items-center justify-center">
+        <div className="absolute w-8 h-8 rounded-full bg-blue-500 animate-ping"></div>
+        <div className="relative w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer shadow-lg">
+            <UserIcon className="h-5 w-5 text-white" />
+        </div>
+    </div>
+);
 
 const needLowUrgencyIcon = createMarkerIcon(
     <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer shadow-md">
@@ -81,7 +90,7 @@ const getResourceMarkerIcon = (resource: Resource) => {
     );
 };
 
-export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [], damageReports = [], center = [28.6139, 77.2090], zoom = 11 }: ResourceMapProps) {
+export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [], damageReports = [], center = [28.6139, 77.2090], zoom = 11, currentUserId }: ResourceMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
@@ -129,10 +138,26 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
 
       userStatuses.forEach((status) => {
           if (!status.location) return;
-          const isSafe = status.status === 'safe';
-          L.marker([status.location.latitude, status.location.longitude], { icon: isSafe ? userSafeIcon : userHelpIcon })
+          const isCurrentUser = status.userId === currentUserId;
+          const isHelp = status.status === 'help';
+
+          let icon;
+          let popupContent;
+
+          if (isCurrentUser && isHelp) {
+              icon = currentUserHelpIcon;
+              popupContent = `<p class="font-bold text-blue-600">You are here</p><p>Status: <span class="text-red-600 font-semibold">${status.status}</span></p>`;
+          } else if (isHelp) {
+              icon = userHelpIcon;
+              popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-red-600">${status.status}</span></p>`;
+          } else {
+              icon = userSafeIcon;
+              popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-green-600">${status.status}</span></p>`;
+          }
+          
+          L.marker([status.location.latitude, status.location.longitude], { icon })
               .addTo(markers)
-              .bindPopup(`<p class="font-bold">${status.userName}</p><p>Status: <span class="${isSafe ? 'text-green-600' : 'text-red-600'}">${status.status}</span></p>`);
+              .bindPopup(popupContent);
       });
 
       resourceNeeds.forEach((need) => {
@@ -150,7 +175,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
             .bindPopup(`<p class="font-bold">Damage Report</p><p>Severity: ${report.assessment.severity}</p><p>${report.description}</p>`);
       });
 
-  }, [resources, userStatuses, resourceNeeds, damageReports]);
+  }, [resources, userStatuses, resourceNeeds, damageReports, currentUserId]);
 
 
   return (

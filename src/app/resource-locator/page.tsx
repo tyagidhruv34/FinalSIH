@@ -81,7 +81,12 @@ export default function ResourceLocatorPage() {
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-           <ResourceMap resources={resources} userStatuses={userStatuses} resourceNeeds={resourceNeeds} />
+           <ResourceMap 
+                resources={resources} 
+                userStatuses={userStatuses} 
+                resourceNeeds={resourceNeeds}
+                currentUserId={user?.uid} 
+            />
         </div>
         <div className="lg:col-span-1">
           <Tabs defaultValue="resources">
