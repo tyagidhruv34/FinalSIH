@@ -39,8 +39,6 @@ import { db } from '@/lib/firebase/firebase';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { resources } from '@/lib/data';
-import { ADMIN_USER_IDS } from '@/lib/config';
-
 
 const ResourceMap = dynamic(() => import('@/components/resource-map'), { 
     ssr: false,
@@ -67,7 +65,6 @@ export default function AdminAlertPage() {
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const { control, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<AlertFormValues>({
     resolver: zodResolver(alertFormSchema),
@@ -89,16 +86,6 @@ export default function AdminAlertPage() {
       return;
     }
     
-    // Check for admin authorization
-    if (!ADMIN_USER_IDS.includes(user.uid)) {
-      setIsAuthorized(false);
-      // We don't redirect here, we just set the state and let the render logic show an access denied message.
-      // This is better for user experience than a sudden redirect.
-      setIsLoading(false);
-      return;
-    }
-    
-    setIsAuthorized(true);
     setIsLoading(true);
 
     const alertsQuery = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'));
@@ -143,22 +130,12 @@ export default function AdminAlertPage() {
   }, [user, loading, router, toast]);
   
 
-  if (loading || !isAuthorized) {
+  if (loading) {
     return (
         <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-10rem)]">
             <Card className="p-8 text-center">
-                {loading ? (
-                    <>
-                        <Loader2 className="animate-spin h-10 w-10 mx-auto mb-4"/>
-                        <p>Verifying access...</p>
-                    </>
-                ) : (
-                    <>
-                        <ShieldX className="h-12 w-12 text-destructive mx-auto mb-4"/>
-                        <CardTitle>Access Denied</CardTitle>
-                        <CardDescription className="mt-2">You do not have permission to view this page.</CardDescription>
-                    </>
-                )}
+                <Loader2 className="animate-spin h-10 w-10 mx-auto mb-4"/>
+                <p>Loading Dashboard...</p>
             </Card>
         </div>
     );
@@ -530,5 +507,7 @@ export default function AdminAlertPage() {
     </div>
   );
 }
+
+    
 
     
