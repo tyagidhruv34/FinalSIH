@@ -26,15 +26,12 @@ export default function Chatbot() {
     if (!input.trim()) return;
 
     const userMessage: Message = { role: 'user', content: input };
-    const newMessages = [...messages, userMessage];
-    
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      // Pass the up-to-date history, excluding the latest user message which is passed separately
-      const chatHistory = newMessages.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+      const chatHistory = [...messages, userMessage].slice(0, -1).map(m => ({ role: m.role, content: m.content }));
       
       const result = await chat({
         history: chatHistory,
@@ -72,7 +69,7 @@ export default function Chatbot() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bot className="h-6 w-6 text-primary" />
-                  <CardTitle>AI Assistant</CardTitle>
+                  <CardTitle>AI Chatbot</CardTitle>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
                   <X className="h-4 w-4" />
@@ -132,10 +129,15 @@ export default function Chatbot() {
       <Button
         onClick={() => setIsOpen(!isOpen)}
         size="lg"
-        className="fixed bottom-4 right-4 z-40 rounded-full h-16 w-16 shadow-lg"
+        className="fixed bottom-4 right-4 z-40 rounded-full h-14 shadow-lg pr-6"
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
-        <span className="sr-only">Toggle Chatbot</span>
+        {isOpen ? <X className="h-6 w-6" /> : (
+            <>
+                <Sparkles className="h-6 w-6" />
+                <span>AI Chatbot</span>
+            </>
+        )}
+        <span className="sr-only">Toggle AI Chatbot</span>
       </Button>
     </>
   );
