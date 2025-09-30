@@ -46,6 +46,8 @@ export default function RescueDashboardPage() {
       return;
     }
 
+    setLoading(true);
+
     const helpRequestQuery = query(
         collection(db, 'user_status'), 
         where('status', '==', 'help'),
@@ -58,6 +60,7 @@ export default function RescueDashboardPage() {
         setLoading(false);
     }, (err) => {
         console.error("Error fetching help requests:", err);
+        setLoading(false);
     });
 
     const damageReportQuery = query(
@@ -68,7 +71,6 @@ export default function RescueDashboardPage() {
     const unsubscribeDamage = onSnapshot(damageReportQuery, (snapshot) => {
         const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DamageReport));
         setDamageReports(reports);
-        setLoading(false);
     }, (err) => {
         console.error("Error fetching damage reports:", err);
     });
@@ -87,16 +89,10 @@ export default function RescueDashboardPage() {
     return null;
   }
   
-  // Create a combined list of map markers
-  const userStatusesForMap = helpRequests; // only show help requests on rescue map
-  const damageReportsForMap = damageReports.map(dr => ({
-    ...dr,
-    // Add a markerType to distinguish in the map component if needed
-    // This is a pattern to consider if you want different icons/popups
-  }));
-  
   const mapCenter = helpRequests.length > 0 && helpRequests[0].location
     ? [helpRequests[0].location.latitude, helpRequests[0].location.longitude] as [number, number]
+    : damageReports.length > 0 && damageReports[0].location
+    ? [damageReports[0].location.latitude, damageReports[0].location.longitude] as [number, number]
     : [28.6139, 77.2090] as [number, number];
 
 
@@ -147,32 +143,34 @@ export default function RescueDashboardPage() {
                     <CardDescription>Users who have signaled they need help.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>User</TableHead>
-                                <TableHead>Time</TableHead>
-                                <TableHead>Location</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {helpRequests.map(req => (
-                                <TableRow key={req.id}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={req.userAvatarUrl} />
-                                                <AvatarFallback>{req.userName.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            {req.userName}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{req.timestamp ? formatDistanceToNow(req.timestamp.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
-                                    <TableCell>{req.location ? 'Available' : 'N/A'}</TableCell>
+                    <div className="max-h-[300px] overflow-y-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>User</TableHead>
+                                    <TableHead>Time</TableHead>
+                                    <TableHead>Location</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {helpRequests.map(req => (
+                                    <TableRow key={req.id}>
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-2">
+                                                <Avatar className="h-8 w-8">
+                                                    <AvatarImage src={req.userAvatarUrl} />
+                                                    <AvatarFallback>{req.userName.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                {req.userName}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>{req.timestamp ? formatDistanceToNow(req.timestamp.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
+                                        <TableCell>{req.location ? 'Available' : 'N/A'}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                     {helpRequests.length === 0 && <p className="text-center text-muted-foreground py-4">No active SOS requests.</p>}
                 </CardContent>
             </Card>
@@ -182,32 +180,34 @@ export default function RescueDashboardPage() {
                     <CardDescription>AI-Assessed structural damage reports from the field.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Image</TableHead>
-                                <TableHead>Severity</TableHead>
-                                <TableHead>Reasoning</TableHead>
-                                <TableHead>Time</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {damageReports.slice(0,5).map(report => (
-                                <TableRow key={report.id}>
-                                    <TableCell>
-                                        <Image src={report.imageUrl} alt="Damage report" width={64} height={48} className="rounded-md object-cover aspect-video"/>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge className={severityStyles[report.assessment.severity]}>
-                                            {report.assessment.severity}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="max-w-[250px] truncate">{report.assessment.reasoning}</TableCell>
-                                    <TableCell>{report.timestamp ? formatDistanceToNow(report.timestamp.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
+                    <div className="max-h-[300px] overflow-y-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Image</TableHead>
+                                    <TableHead>Severity</TableHead>
+                                    <TableHead className="hidden md:table-cell">Reasoning</TableHead>
+                                    <TableHead>Time</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {damageReports.slice(0,5).map(report => (
+                                    <TableRow key={report.id}>
+                                        <TableCell>
+                                            <Image src={report.imageUrl} alt="Damage report" width={64} height={48} className="rounded-md object-cover aspect-video"/>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge className={severityStyles[report.assessment.severity]}>
+                                                {report.assessment.severity}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="max-w-[250px] truncate hidden md:table-cell">{report.assessment.reasoning}</TableCell>
+                                        <TableCell>{report.timestamp ? formatDistanceToNow(report.timestamp.toDate(), {addSuffix: true}) : 'N/A'}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                     {damageReports.length === 0 && <p className="text-center text-muted-foreground py-4">No damage reports submitted yet.</p>}
                 </CardContent>
             </Card>
@@ -219,13 +219,14 @@ export default function RescueDashboardPage() {
                         <MapPin />
                         Operations Map
                     </CardTitle>
+                     <CardDescription>Live view of SOS requests and damage reports.</CardDescription>
                 </CardHeader>
                 <CardContent>
                      <ResourceMap 
                         resources={resources as Resource[]} 
-                        userStatuses={userStatusesForMap} 
+                        userStatuses={helpRequests} 
                         resourceNeeds={[]} 
-                        damageReports={damageReportsForMap}
+                        damageReports={damageReports}
                         center={mapCenter}
                         zoom={12}
                     />
@@ -236,3 +237,5 @@ export default function RescueDashboardPage() {
     </div>
   );
 }
+
+    

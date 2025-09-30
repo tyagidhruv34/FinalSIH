@@ -217,10 +217,10 @@ export default function AdminAlertPage() {
 
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -410,7 +410,7 @@ export default function AdminAlertPage() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
          <Card>
             <CardHeader>
                 <CardTitle>Sent Alerts</CardTitle>
@@ -422,40 +422,42 @@ export default function AdminAlertPage() {
                 ) : alerts.length === 0 ? (
                     <p>No alerts have been sent yet.</p>
                 ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Severity</TableHead>
-                                <TableHead>Location/Area</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {alerts.map((alert) => (
-                                <TableRow key={alert.id}>
-                                    <TableCell className="font-medium">{alert.title}</TableCell>
-                                    <TableCell><Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'}>{alert.severity}</Badge></TableCell>
-                                    <TableCell><div className="flex flex-wrap gap-1 max-w-xs">{alert.affectedAreas.map(area => <Badge key={area} variant="outline">{area}</Badge>)}</div></TableCell>
-                                    <TableCell>{alert.timestamp ? format(alert.timestamp.toDate(), 'PPP p') : 'Just now'}</TableCell>
-                                    <TableCell className="text-right space-x-1">
-                                        {alert.severity === 'Critical' && !alert.acknowledged && (
-                                            <Button variant="outline" size="sm" onClick={() => handleAcknowledge(alert.id)}>
-                                                Acknowledge
-                                            </Button>
-                                        )}
-                                        {alert.acknowledged && (
-                                            <Badge variant="secondary"><CheckCircle className="h-4 w-4 mr-1 text-green-600"/> {alert.rescueStatus || 'Acknowledged'}</Badge>
-                                        )}
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteAlert(alert.id)}>
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </TableCell>
+                    <div className="max-h-[400px] overflow-y-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Title</TableHead>
+                                    <TableHead>Severity</TableHead>
+                                    <TableHead>Location/Area</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {alerts.map((alert) => (
+                                    <TableRow key={alert.id}>
+                                        <TableCell className="font-medium">{alert.title}</TableCell>
+                                        <TableCell><Badge variant={alert.severity === 'Critical' || alert.severity === 'High' ? 'destructive' : 'secondary'}>{alert.severity}</Badge></TableCell>
+                                        <TableCell><div className="flex flex-wrap gap-1 max-w-xs">{alert.affectedAreas.map(area => <Badge key={area} variant="outline">{area}</Badge>)}</div></TableCell>
+                                        <TableCell>{alert.timestamp ? format(alert.timestamp.toDate(), 'PPP p') : 'Just now'}</TableCell>
+                                        <TableCell className="text-right space-x-1">
+                                            {alert.severity === 'Critical' && !alert.acknowledged && (
+                                                <Button variant="outline" size="sm" onClick={() => handleAcknowledge(alert.id)}>
+                                                    Acknowledge
+                                                </Button>
+                                            )}
+                                            {alert.acknowledged && (
+                                                <Badge variant="secondary"><CheckCircle className="h-4 w-4 mr-1 text-green-600"/> {alert.rescueStatus || 'Acknowledged'}</Badge>
+                                            )}
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteAlert(alert.id)}>
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 )}
             </CardContent>
         </Card>
@@ -495,6 +497,5 @@ export default function AdminAlertPage() {
       </div>
     </div>
   );
-}
 
     
