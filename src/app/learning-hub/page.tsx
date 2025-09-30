@@ -14,12 +14,12 @@ import { Progress } from '@/components/ui/progress';
 // Make sure the URL is the "embed" version from YouTube.
 const educationalVideos = [
   {
-    title: "Earthquake Safety: Drop, Cover, and Hold On",
-    src: "https://www.youtube.com/embed/GSDmq_t_3gA",
+    title: "Earthquake Safety Video",
+    src: "https://www.youtube.com/embed/ezafP9gYF-A",
   },
   {
-    title: "How to Use a Fire Extinguisher (PASS Method)",
-    src: "https://www.youtube.com/embed/lU_zFFcVzvo",
+    title: "Fire Extinguisher Training Video (P.A.S.S.)",
+    src: "https://www.youtube.com/embed/BLjoWjCoT7g",
   },
   {
     title: "Build an Emergency Kit",
