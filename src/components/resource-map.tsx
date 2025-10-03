@@ -21,8 +21,8 @@ L.Icon.Default.mergeOptions({
 
 type ResourceMapProps = {
   resources: Resource[];
-  userStatuses: UserStatus[];
-  resourceNeeds: ResourceNeed[];
+  userStatuses?: UserStatus[];
+  resourceNeeds?: ResourceNeed[];
   damageReports?: DamageReport[];
   center?: [number, number];
   zoom?: number;
@@ -99,87 +99,89 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
   const markersRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
-    if (mapContainerRef.current && !mapRef.current) {
-        const map = L.map(mapContainerRef.current).setView(center, zoom);
-        mapRef.current = map;
+    if (!mapContainerRef.current) return;
+    if (!mapRef.current) {
+        mapRef.current = L.map(mapContainerRef.current).setView(center, zoom);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        }).addTo(mapRef.current);
 
-        markersRef.current = new L.LayerGroup().addTo(map);
-    }
-    
-    return () => {
-        if (mapRef.current) {
-            mapRef.current.remove();
-            mapRef.current = null;
-        }
-    };
-  }, []);
-
-  useEffect(() => {
-    if(mapRef.current) {
+        markersRef.current = new L.LayerGroup().addTo(mapRef.current);
+    } else {
         mapRef.current.setView(center, zoom);
     }
-  }, [center, zoom])
+    
+    const map = mapRef.current;
+    const markers = markersRef.current;
+    if (!map || !markers) return;
 
-  useEffect(() => {
-      const map = mapRef.current;
-      const markers = markersRef.current;
-      if (!map || !markers) return;
-
-      markers.clearLayers();
-      
-      resources.forEach((resource) => {
-          L.marker([resource.position.lat, resource.position.lng], { icon: getResourceMarkerIcon(resource) })
-              .addTo(markers)
-              .bindPopup(`<p class="font-bold">${resource.name}</p><p>${resource.address}</p>`);
-      });
-
-      userStatuses.forEach((status) => {
-          if (!status.location) return;
-          const isCurrentUser = status.userId === currentUserId;
-          const isHelp = status.status === 'help';
-
-          let icon;
-          let popupContent;
-
-          if (isCurrentUser && isHelp) {
-              icon = currentUserHelpIcon;
-              popupContent = `<p class="font-bold text-blue-600">You Are Here (SOS)</p><p>Status: <span class="font-semibold">${status.status}</span></p>`;
-          } else if (isHelp) {
-              icon = userHelpIcon;
-              popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-red-600 font-semibold">${status.status}</span></p>`;
-          } else {
-              icon = userSafeIcon;
-              popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-green-600">${status.status}</span></p>`;
-          }
-          
-          L.marker([status.location.latitude, status.location.longitude], { icon })
-              .addTo(markers)
-              .bindPopup(popupContent);
-      });
-
-      resourceNeeds.forEach((need) => {
-          if (!need.location) return;
-          const isHighUrgency = need.urgency === 'High';
-          L.marker([need.location.latitude, need.location.longitude], { icon: isHighUrgency ? needHighUrgencyIcon : needLowUrgencyIcon })
-              .addTo(markers)
-              .bindPopup(`<p class="font-bold">${need.quantity}x ${need.item}</p><p>Urgency: ${need.urgency}</p><p>Contact: ${need.contactInfo}</p>`);
-      });
-
-      (damageReports || []).forEach((report) => {
-        if (!report.location) return;
-        L.marker([report.location.latitude, report.location.longitude], { icon: damageReportIcon })
+    markers.clearLayers();
+    
+    resources.forEach((resource) => {
+        L.marker([resource.position.lat, resource.position.lng], { icon: getResourceMarkerIcon(resource) })
             .addTo(markers)
-            .bindPopup(`<p class="font-bold">Damage Report</p><p>Severity: ${report.assessment.severity}</p><p>${report.description}</p>`);
-      });
+            .bindPopup(`<p class="font-bold">${resource.name}</p><p>${resource.address}</p>`);
+    });
 
-  }, [resources, userStatuses, resourceNeeds, damageReports, currentUserId]);
+    userStatuses.forEach((status) => {
+        if (!status.location) return;
+        const isCurrentUser = status.userId === currentUserId;
+        const isHelp = status.status === 'help';
+
+        let icon;
+        let popupContent;
+
+        if (isCurrentUser && isHelp) {
+            icon = currentUserHelpIcon;
+            popupContent = `<p class="font-bold text-blue-600">You Are Here (SOS)</p><p>Status: <span class="font-semibold">${status.status}</span></p>`;
+        } else if (isHelp) {
+            icon = userHelpIcon;
+            popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-red-600 font-semibold">${status.status}</span></p>`;
+        } else {
+            icon = userSafeIcon;
+            popupContent = `<p class="font-bold">${status.userName}</p><p>Status: <span class="text-green-600">${status.status}</span></p>`;
+        }
+        
+        L.marker([status.location.latitude, status.location.longitude], { icon })
+            .addTo(markers)
+            .bindPopup(popupContent);
+    });
+
+    resourceNeeds.forEach((need) => {
+        if (!need.location) return;
+        const isHighUrgency = need.urgency === 'High';
+        L.marker([need.location.latitude, need.location.longitude], { icon: isHighUrgency ? needHighUrgencyIcon : needLowUrgencyIcon })
+            .addTo(markers)
+            .bindPopup(`<p class="font-bold">${need.quantity}x ${need.item}</p><p>Urgency: ${need.urgency}</p><p>Contact: ${need.contactInfo}</p>`);
+    });
+
+    (damageReports || []).forEach((report) => {
+      if (!report.location) return;
+      L.marker([report.location.latitude, report.location.longitude], { icon: damageReportIcon })
+          .addTo(markers)
+          .bindPopup(`<p class="font-bold">Damage Report</p><p>Severity: ${report.assessment.severity}</p><p>${report.description}</p>`);
+    });
+    
+    // Clean up map instance on component unmount
+    return () => {
+        if (mapRef.current && mapContainerRef.current) {
+            // Check if map container is still in DOM, to avoid errors during hot-reloads
+            if (document.body.contains(mapContainerRef.current)) {
+                // Don't remove map, just clear markers for next update
+            } else {
+                 if (mapRef.current) {
+                    mapRef.current.remove();
+                    mapRef.current = null;
+                }
+            }
+        }
+    };
+  }, [resources, userStatuses, resourceNeeds, damageReports, center, zoom, currentUserId]);
 
 
   return (
     <div id="map" ref={mapContainerRef} className={cn("h-[500px] w-full rounded-lg overflow-hidden border min-h-[500px] z-0", className)} />
   );
 }
+
