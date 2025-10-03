@@ -29,10 +29,10 @@ import { indianDistricts, alertTypes, alertSeverities } from '@/lib/data';
 import { AlertService } from '@/lib/firebase/alerts';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
+import type { Alert, DamageReport, Resource, UserStatus, ResourceNeed } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle, ShieldX, Loader2, User } from 'lucide-react';
+import { Trash2, ShieldAlert, Building2, CheckCircle, MapPin, AlertTriangle, ShieldX, Loader2, User, PackageOpen, Truck } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Timestamp, collection, onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
@@ -60,10 +60,11 @@ export default function AdminAlertPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
+  const [resourceNeeds, setResourceNeeds] = useState<ResourceNeed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const { control, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<AlertFormValues>({
@@ -120,11 +121,21 @@ export default function AdminAlertPage() {
         console.error("Error fetching help requests:", err);
     });
 
+    const resourceNeedsQuery = query(collection(db, 'resource_needs'), where('fulfilled', '==', false), orderBy('timestamp', 'desc'));
+    const unsubscribeResourceNeeds = onSnapshot(resourceNeedsQuery, (snapshot) => {
+        const needs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ResourceNeed));
+        setResourceNeeds(needs);
+    }, (error) => {
+        console.error("Error fetching resource needs: ", error);
+        toast({ title: "Error", description: "Failed to fetch resource needs.", variant: "destructive" });
+    });
+
 
     return () => {
         unsubscribeAlerts();
         unsubscribeReports();
         unsubscribeHelp();
+        unsubscribeResourceNeeds();
     };
 
   }, [user, loading, router, toast]);
@@ -224,7 +235,7 @@ export default function AdminAlertPage() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -250,6 +261,20 @@ export default function AdminAlertPage() {
             <div className="text-2xl font-bold text-destructive">{helpRequests.length}</div>
             <p className="text-xs text-muted-foreground">
               Users actively requesting help
+            </p>
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Resource Requests
+            </CardTitle>
+            <Truck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{resourceNeeds.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Active community requests
             </p>
           </CardContent>
         </Card>
@@ -504,6 +529,7 @@ export default function AdminAlertPage() {
             </CardContent>
         </Card>
       </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <Card>
             <CardHeader>
                 <CardTitle>Active SOS Requests</CardTitle>
@@ -538,6 +564,43 @@ export default function AdminAlertPage() {
                 {helpRequests.length === 0 && <p className="text-center text-muted-foreground py-4">No active SOS requests.</p>}
             </CardContent>
         </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Active Resource Requests</CardTitle>
+                <CardDescription>Unfulfilled requests for essential items from the community.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <div className="max-h-[300px] overflow-y-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Item</TableHead>
+                                <TableHead>Urgency</TableHead>
+                                <TableHead>Contact</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {resourceNeeds.map(req => (
+                                <TableRow key={req.id}>
+                                    <TableCell className="font-medium">
+                                        <div className="flex items-center gap-2">
+                                            <PackageOpen className="h-4 w-4" />
+                                            {req.quantity}x {req.item}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={req.urgency === 'High' ? 'destructive' : 'secondary'}>{req.urgency}</Badge>
+                                    </TableCell>
+                                    <TableCell>{req.contactInfo}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+                 {resourceNeeds.length === 0 && <p className="text-center text-muted-foreground py-4">No active resource requests.</p>}
+            </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
