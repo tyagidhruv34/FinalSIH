@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
-import type { Alert, DamageReport, Resource } from '@/lib/types';
+import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -88,11 +88,20 @@ export default function RescueDashboardPage() {
     return null;
   }
   
-  const mapCenter = sosAlerts.length > 0 && sosAlerts[0].affectedAreas[0]?.startsWith('Lat:')
-    ? [parseFloat(sosAlerts[0].affectedAreas[0].split(', ')[0].replace('Lat: ', '')), parseFloat(sosAlerts[0].affectedAreas[0].split(', ')[1].replace('Lon: ', ''))] as [number, number]
+  const mapCenter = sosAlerts.length > 0 && sosAlerts[0].location
+    ? [sosAlerts[0].location.latitude, sosAlerts[0].location.longitude] as [number, number]
     : damageReports.length > 0 && damageReports[0].location
     ? [damageReports[0].location.latitude, damageReports[0].location.longitude] as [number, number]
     : [28.6139, 77.2090] as [number, number];
+    
+  const userStatusesFromSOS: UserStatus[] = sosAlerts.map(alert => ({
+    id: alert.id,
+    userId: alert.createdBy,
+    userName: alert.title.replace('SOS: Help request from ', ''),
+    status: 'help',
+    location: alert.location,
+    timestamp: alert.timestamp,
+  }));
 
 
   return (
@@ -222,7 +231,7 @@ export default function RescueDashboardPage() {
                 <CardContent>
                      <ResourceMap 
                         resources={resources as Resource[]} 
-                        userStatuses={[]} 
+                        userStatuses={userStatusesFromSOS} 
                         resourceNeeds={[]} 
                         damageReports={damageReports}
                         center={mapCenter}

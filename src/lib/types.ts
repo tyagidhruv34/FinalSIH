@@ -14,6 +14,7 @@ export type Alert = {
   type: "Cyclone" | "Flood" | "Earthquake" | "Fire" | "Other";
   timestamp: Timestamp;
   createdBy: string;
+  location?: GeoPoint;
   acknowledged?: boolean;
   rescueStatus?: 'Dispatched' | 'In Progress' | 'Completed' | null;
   rescueTeam?: string;

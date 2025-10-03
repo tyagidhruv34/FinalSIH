@@ -4,7 +4,7 @@
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect, useRef } from 'react';
-import type { Resource, UserStatus, ResourceNeed, DamageReport } from "@/lib/types";
+import type { Resource, UserStatus, ResourceNeed, DamageReport, Alert } from "@/lib/types";
 import * as icons from "lucide-react";
 import { UserCheck, AlertTriangle, PackageOpen, Building2, User as UserIcon } from "lucide-react";
 import ReactDOMServer from 'react-dom/server';

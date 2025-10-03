@@ -64,6 +64,7 @@ export function useStatusUpdater() {
           type: 'Other',
           affectedAreas: location ? [`Lat: ${lat}, Lon: ${lon}`] : ['Location not available'],
           createdBy: user.uid,
+          location: location || undefined,
           acknowledged: false,
           rescueStatus: null,
         });
