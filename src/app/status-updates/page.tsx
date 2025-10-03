@@ -18,7 +18,8 @@ import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 export default function StatusUpdatesPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
+  const { handleStatusUpdate } = useStatusUpdater();
+  const [isSubmittingPage, setIsSubmittingPage] = useState<'safe' | 'help' | null>(null);
 
 
   if (loading) {
@@ -31,7 +32,9 @@ export default function StatusUpdatesPage() {
   }
   
   const onStatusUpdate = async (status: 'safe' | 'help') => {
+      setIsSubmittingPage(status);
       await handleStatusUpdate(status);
+      setIsSubmittingPage(null);
       router.push('/');
   }
 
@@ -56,9 +59,9 @@ export default function StatusUpdatesPage() {
               <Button
                 className="h-24 text-xl"
                 onClick={() => onStatusUpdate('safe')}
-                disabled={!!isSubmitting}
+                disabled={!!isSubmittingPage}
               >
-                 {isSubmitting === 'safe' ? (
+                 {isSubmittingPage === 'safe' ? (
                   <Loader2 className="animate-spin" />
                 ) : (
                   <><CheckCircle className="mr-2 h-8 w-8" /> I'M SAFE</>
@@ -68,9 +71,9 @@ export default function StatusUpdatesPage() {
                 variant="destructive"
                 className="h-24 text-xl"
                 onClick={() => onStatusUpdate('help')}
-                disabled={!!isSubmitting}
+                disabled={!!isSubmittingPage}
               >
-                {isSubmitting === 'help' ? (
+                {isSubmittingPage === 'help' ? (
                   <Loader2 className="animate-spin" />
                 ) : (
                   <><AlertTriangle className="mr-2 h-8 w-8" /> NEED HELP</>
