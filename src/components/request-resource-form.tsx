@@ -41,7 +41,7 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [location, setLocation] = useState<GeoPoint | null>(null);
-  const [isLocationLoading, setIsLocationLoading] = useState(false);
+  const [isLocationLoading, setIsLocationLoading] = useState(true);
 
   const { control, handleSubmit, formState: { errors }, reset, setValue } = useForm<ResourceNeedFormValues>({
     resolver: zodResolver(resourceNeedSchema),
@@ -56,7 +56,6 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
   useEffect(() => {
     if (open) {
       // Reset state and prefill contact info when dialog opens
-      setLocation(null);
       setIsLocationLoading(true);
       if(user && (user.email || user.phoneNumber)) {
         setValue('contactInfo', user.email || user.phoneNumber || '');
@@ -71,6 +70,7 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
         (err) => {
           console.warn(`ERROR(${err.code}): ${err.message}`);
           setIsLocationLoading(false);
+          setLocation(null); // Explicitly set to null on error
           toast({
             variant: "destructive",
             title: "Location Error",
@@ -93,7 +93,7 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
       await ResourceNeedService.createResourceNeed({
         ...data,
         userId: user.uid,
-        location: location, // This can be null, the service/type needs to allow it
+        location: location, 
         fulfilled: false,
         timestamp: serverTimestamp(),
       });
