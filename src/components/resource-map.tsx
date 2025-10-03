@@ -99,8 +99,7 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
   const markersRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-    if (!mapRef.current) {
+    if (mapContainerRef.current && !mapRef.current) {
         mapRef.current = L.map(mapContainerRef.current).setView(center, zoom);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -108,10 +107,23 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
         }).addTo(mapRef.current);
 
         markersRef.current = new L.LayerGroup().addTo(mapRef.current);
-    } else {
-        mapRef.current.setView(center, zoom);
     }
     
+    // Clean up map instance on component unmount
+    return () => {
+        if (mapRef.current) {
+            mapRef.current.remove();
+            mapRef.current = null;
+        }
+    };
+  }, []); // Only run once on mount to initialize map
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.setView(center, zoom);
+  }, [center, zoom]);
+
+  useEffect(() => {
     const map = mapRef.current;
     const markers = markersRef.current;
     if (!map || !markers) return;
@@ -163,25 +175,10 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
           .bindPopup(`<p class="font-bold">Damage Report</p><p>Severity: ${report.assessment.severity}</p><p>${report.description}</p>`);
     });
     
-    // Clean up map instance on component unmount
-    return () => {
-        if (mapRef.current && mapContainerRef.current) {
-            // Check if map container is still in DOM, to avoid errors during hot-reloads
-            if (document.body.contains(mapContainerRef.current)) {
-                // Don't remove map, just clear markers for next update
-            } else {
-                 if (mapRef.current) {
-                    mapRef.current.remove();
-                    mapRef.current = null;
-                }
-            }
-        }
-    };
-  }, [resources, userStatuses, resourceNeeds, damageReports, center, zoom, currentUserId]);
+  }, [resources, userStatuses, resourceNeeds, damageReports, currentUserId]);
 
 
   return (
     <div id="map" ref={mapContainerRef} className={cn("h-[500px] w-full rounded-lg overflow-hidden border min-h-[500px] z-0", className)} />
   );
 }
-

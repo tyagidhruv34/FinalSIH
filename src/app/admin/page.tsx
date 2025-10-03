@@ -429,7 +429,7 @@ export default function AdminAlertPage() {
                      <ResourceMap 
                         resources={resources as Resource[]} 
                         userStatuses={helpRequests} 
-                        resourceNeeds={[]} 
+                        resourceNeeds={resourceNeeds} 
                         damageReports={damageReports}
                         center={mapCenter}
                         zoom={10}
@@ -577,6 +577,7 @@ export default function AdminAlertPage() {
                                 <TableHead>Item</TableHead>
                                 <TableHead>Urgency</TableHead>
                                 <TableHead>Contact</TableHead>
+                                <TableHead>Location</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -592,6 +593,7 @@ export default function AdminAlertPage() {
                                         <Badge variant={req.urgency === 'High' ? 'destructive' : 'secondary'}>{req.urgency}</Badge>
                                     </TableCell>
                                     <TableCell>{req.contactInfo}</TableCell>
+                                     <TableCell>{req.location ? `${req.location.latitude.toFixed(4)}, ${req.location.longitude.toFixed(4)}` : 'N/A'}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -604,7 +606,3 @@ export default function AdminAlertPage() {
     </div>
   );
 }
-
-    
-
-    
