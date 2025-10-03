@@ -3,7 +3,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Clock, Map, ListFilter, ServerCrash, Users, LifeBuoy, Truck, MapPin } from "lucide-react";
+import { Clock, Map, ListFilter, ServerCrash, Users, LifeBuoy, Truck, MapPin, Siren, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,10 +58,16 @@ export default function DashboardPage() {
   const [damageReports, setDamageReports] = useState<any[]>([]); // Using any to avoid type issues with firebase data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeSosAlert, setActiveSosAlert] = useState<Alert | null>(null);
   
   const helpRequests = userStatuses.filter(s => s.status === 'help');
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    };
+    
     setLoading(true);
 
     const alertsQuery = query(
@@ -99,6 +105,9 @@ export default function DashboardPage() {
             if (!b.timestamp) return -1;
             return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
+        
+        const userSosAlert = sortedAlerts.find(a => a.severity === 'Critical' && a.createdBy === user.uid && a.rescueStatus !== 'Completed');
+        setActiveSosAlert(userSosAlert || null);
 
         setAlerts(sortedAlerts);
         setLoading(false);
@@ -145,6 +154,33 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+        {user && activeSosAlert && (
+            <Card className="bg-destructive/10 border-destructive animate-pulse">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                        <Siren className="h-6 w-6 text-destructive"/>
+                        {t('dashboard_sos_status_title')}
+                    </CardTitle>
+                    <CardDescription className="text-destructive/80">
+                         {activeSosAlert.acknowledged 
+                            ? t('dashboard_sos_status_dispatched_desc')
+                            : t('dashboard_sos_status_awaiting_desc')}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <p className="font-semibold text-lg">
+                        {t('dashboard_sos_status_acknowledged').replace('{status}', activeSosAlert.rescueStatus || t('dashboard_sos_status_awaiting'))}
+                    </p>
+                    {activeSosAlert.rescueTeam && activeSosAlert.eta && (
+                        <div>
+                             <p className="text-sm font-medium">{t('dashboard_sos_rescue_team_title').replace('{team}', activeSosAlert.rescueTeam)}</p>
+                             <p className="text-sm text-muted-foreground">{t('dashboard_sos_rescue_team_eta').replace('{eta}', activeSosAlert.eta)}</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        )}
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">{t('dashboard_title')}</h1>
