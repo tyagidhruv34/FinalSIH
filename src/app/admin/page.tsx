@@ -60,7 +60,7 @@ export default function AdminAlertPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
   const [helpRequests, setHelpRequests] = useState<UserStatus[]>([]);
@@ -604,5 +604,7 @@ export default function AdminAlertPage() {
     </div>
   );
 }
+
+    
 
     
