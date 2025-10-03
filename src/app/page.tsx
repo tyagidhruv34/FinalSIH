@@ -58,7 +58,7 @@ export default function DashboardPage() {
   const [damageReports, setDamageReports] = useState<any[]>([]); // Using any to avoid type issues with firebase data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeSosAlert, setActiveSosAlert] = useState<Alert | null>(null);
+  const [activeSosAlerts, setActiveSosAlerts] = useState<Alert[]>([]);
   
   const helpRequests = userStatuses.filter(s => s.status === 'help');
 
@@ -72,8 +72,7 @@ export default function DashboardPage() {
 
     const alertsQuery = query(
         collection(db, 'alerts'),
-        orderBy('timestamp', 'desc'),
-        limit(20)
+        orderBy('timestamp', 'desc')
     );
 
     const unsubscribeAlerts = onSnapshot(alertsQuery, async (querySnapshot) => {
@@ -106,8 +105,8 @@ export default function DashboardPage() {
             return b.timestamp.toMillis() - a.timestamp.toMillis();
         });
         
-        const userSosAlert = sortedAlerts.find(a => a.severity === 'Critical' && a.createdBy === user.uid && a.rescueStatus !== 'Completed');
-        setActiveSosAlert(userSosAlert || null);
+        const userSosAlerts = sortedAlerts.filter(a => a.severity === 'Critical' && a.createdBy === user.uid && a.rescueStatus !== 'Completed');
+        setActiveSosAlerts(userSosAlerts);
 
         setAlerts(sortedAlerts);
         setLoading(false);
@@ -154,29 +153,36 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-        {user && activeSosAlert && (
-            <Card className="bg-destructive/10 border-destructive animate-pulse">
+        {user && activeSosAlerts.length > 0 && (
+             <Card className="bg-destructive/10 border-destructive">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-3">
-                        <Siren className="h-6 w-6 text-destructive"/>
+                        <Siren className="h-6 w-6 text-destructive animate-pulse"/>
                         {t('dashboard_sos_status_title')}
                     </CardTitle>
                     <CardDescription className="text-destructive/80">
-                         {activeSosAlert.acknowledged 
+                        {activeSosAlerts[0].acknowledged 
                             ? t('dashboard_sos_status_dispatched_desc')
                             : t('dashboard_sos_status_awaiting_desc')}
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                    <p className="font-semibold text-lg">
-                        {t('dashboard_sos_status_acknowledged').replace('{status}', activeSosAlert.rescueStatus || t('dashboard_sos_status_awaiting'))}
-                    </p>
-                    {activeSosAlert.rescueTeam && activeSosAlert.eta && (
-                        <div>
-                             <p className="text-sm font-medium">{t('dashboard_sos_rescue_team_title').replace('{team}', activeSosAlert.rescueTeam)}</p>
-                             <p className="text-sm text-muted-foreground">{t('dashboard_sos_rescue_team_eta').replace('{eta}', activeSosAlert.eta)}</p>
+                <CardContent className="space-y-4">
+                    {activeSosAlerts.map(activeSosAlert => (
+                        <div key={activeSosAlert.id} className="p-3 border-t border-destructive/20 first:border-t-0">
+                             <p className="font-semibold text-lg">
+                                {t('dashboard_sos_status_acknowledged').replace('{status}', activeSosAlert.rescueStatus || t('dashboard_sos_status_awaiting'))}
+                            </p>
+                             <p className="text-sm text-muted-foreground">
+                                Requested {activeSosAlert.timestamp ? formatDistanceToNow(activeSosAlert.timestamp.toDate(), {addSuffix: true}) : 'just now'}
+                            </p>
+                            {activeSosAlert.rescueTeam && activeSosAlert.eta && (
+                                <div className="mt-2">
+                                     <p className="text-sm font-medium">{t('dashboard_sos_rescue_team_title').replace('{team}', activeSosAlert.rescueTeam)}</p>
+                                     <p className="text-sm text-muted-foreground">{t('dashboard_sos_rescue_team_eta').replace('{eta}', activeSosAlert.eta)}</p>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    ))}
                 </CardContent>
             </Card>
         )}
