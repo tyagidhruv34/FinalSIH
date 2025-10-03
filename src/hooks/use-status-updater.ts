@@ -33,7 +33,6 @@ const getLocation = (): Promise<GeoPoint | null> => {
 export function useStatusUpdater() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState<'safe' | 'help' | null>(null);
 
   const handleStatusUpdate = async (status: 'safe' | 'help') => {
     if (!user) {
@@ -44,8 +43,6 @@ export function useStatusUpdater() {
       });
       return;
     }
-
-    setIsSubmitting(status);
 
     try {
       const location = await getLocation();
@@ -91,11 +88,10 @@ export function useStatusUpdater() {
         title: 'Update Failed',
         description: 'Could not update your status. Please try again.',
       });
-    } finally {
-      // This block will run regardless of success or failure, ensuring the button resets.
-      setIsSubmitting(null);
+      // Re-throw the error if you want the calling component to handle it
+      throw error;
     }
   };
 
-  return { isSubmitting, handleStatusUpdate };
+  return { handleStatusUpdate };
 }

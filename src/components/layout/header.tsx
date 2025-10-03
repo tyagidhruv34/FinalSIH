@@ -37,6 +37,7 @@ import { Loader2, Mic, MicOff, PlayCircle } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 
 const navItems = [
@@ -74,7 +75,8 @@ export default function Header() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const { isSubmitting, handleStatusUpdate } = useStatusUpdater();
+  const { handleStatusUpdate } = useStatusUpdater();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useLanguage();
   const { toast } = useToast();
 
@@ -82,14 +84,17 @@ export default function Header() {
     const lowerCaseCommand = command.toLowerCase();
     if (lowerCaseCommand.includes('save me')) {
         toast({ title: "Voice command recognized", description: "Sending SOS..." });
-        handleStatusUpdate('help').then(() => {
-          router.push('/');
-        });
+        handleSos();
     }
   };
   
   const handleSos = async () => {
-    await handleStatusUpdate('help');
+    setIsSubmitting(true);
+    try {
+        await handleStatusUpdate('help');
+    } finally {
+        setIsSubmitting(false);
+    }
   }
 
   const { isListening, isSupported, startListening, stopListening } = useVoiceRecognition({
@@ -251,5 +256,3 @@ export default function Header() {
     </header>
   );
 }
-
-    
