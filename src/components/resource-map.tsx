@@ -96,10 +96,10 @@ const getResourceMarkerIcon = (resource: Resource) => {
 export default function ResourceMap({ resources, userStatuses = [], resourceNeeds = [], damageReports = [], center = [28.6139, 77.2090], zoom = 11, currentUserId, className }: ResourceMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.LayerGroup>(new L.LayerGroup());
+  const markersRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
-    if (mapContainerRef.current && !mapRef.current) { // Only initialize map once
+    if (mapContainerRef.current && !mapRef.current) {
         const map = L.map(mapContainerRef.current).setView(center, zoom);
         mapRef.current = map;
 
@@ -107,17 +107,16 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        markersRef.current.addTo(map);
+        markersRef.current = new L.LayerGroup().addTo(map);
     }
     
-    // Cleanup function to run when component unmounts
     return () => {
         if (mapRef.current) {
             mapRef.current.remove();
             mapRef.current = null;
         }
     };
-  }, []); // Empty dependency array ensures this runs only once on mount and cleanup on unmount
+  }, []);
 
   useEffect(() => {
     if(mapRef.current) {
@@ -126,13 +125,12 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
   }, [center, zoom])
 
   useEffect(() => {
+      const map = mapRef.current;
       const markers = markersRef.current;
-      if (!markers) return;
+      if (!map || !markers) return;
 
-      // Clear existing markers before adding new ones
       markers.clearLayers();
       
-      // Add new markers
       resources.forEach((resource) => {
           L.marker([resource.position.lat, resource.position.lng], { icon: getResourceMarkerIcon(resource) })
               .addTo(markers)
