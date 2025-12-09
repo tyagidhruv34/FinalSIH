@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { assessDamage } from '@/ai/flows/assess-damage-flow';
 
 const hasAiKey = !!process.env.GOOGLE_GENAI_API_KEY;
 
@@ -16,6 +15,8 @@ export async function POST(request: Request) {
       });
     }
 
+    // Lazy load genkit to avoid build-time initialization issues
+    const { assessDamage } = await import('@/ai/flows/assess-damage-flow');
     const result = await assessDamage(body);
     return NextResponse.json(result);
   } catch (error) {

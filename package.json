@@ -6,11 +6,12 @@
     "dev": "next dev -p 9002",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
-    "build": "cross-env NODE_ENV=production next build",
+    "build": "next build",
+    "build:check": "node check-build.js",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "postinstall": "cd src/functions && npm install"
+    "postinstall": "cd src/functions && npm install || echo 'Functions install skipped (optional)'"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",

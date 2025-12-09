@@ -1,9 +1,18 @@
 import type {NextConfig} from 'next';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-});
+
+// Conditionally apply PWA only if not on Vercel (PWA can cause deployment issues)
+let withPWA: any = (config: NextConfig) => config;
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    withPWA = require('next-pwa')({
+      dest: 'public',
+      disable: process.env.NODE_ENV === 'development',
+    });
+  } catch (e) {
+    console.warn('PWA plugin not available, skipping...');
+  }
+}
 
 const baseConfig: NextConfig = {
   /* config options here */
@@ -21,8 +30,9 @@ const baseConfig: NextConfig = {
     NEXT_PUBLIC_WEATHER_MAP_API_KEY: process.env.NEXT_PUBLIC_WEATHER_MAP_API_KEY || 'c7836e6f71da09d60e0a00f506446f5d',
   },
   // Performance optimizations
-  swcMinify: true,
   poweredByHeader: false,
+  // Server external packages (moved from experimental in Next.js 15)
+  serverExternalPackages: ['firebase', 'genkit', '@genkit-ai/googleai'],
   // Optimize images
   images: {
     remotePatterns: [
@@ -50,8 +60,6 @@ const baseConfig: NextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-    // Optimize server components
-    serverComponentsExternalPackages: ['firebase'],
   },
   // Webpack optimizations
   webpack: (config, { isServer }) => {
