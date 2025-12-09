@@ -28,6 +28,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let isMounted = true;
     
+    // Only set up auth listener if auth is initialized
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+    
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!isMounted) return;
       
@@ -71,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       isMounted = false;
-      unsubscribe();
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 
@@ -80,14 +86,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userType,
     loading,
     signInWithGoogle: async (userType: UserType) => {
+      if (!auth) {
+        console.error('Firebase Auth is not initialized');
+        return;
+      }
       await signInWithGoogle(userType);
       // Refresh user type after sign in
-      if (auth.currentUser) {
+      if (auth && auth.currentUser) {
         const profile = await getUserProfile(auth.currentUser.uid);
         setUserType(profile?.userType || null);
       }
     },
     signOut: async () => {
+      if (!auth) return;
       await firebaseSignOut();
       setUserType(null);
     },

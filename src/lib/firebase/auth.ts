@@ -15,7 +15,17 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import app, { db } from './firebase';
 import type { UserProfile, UserType } from '@/lib/types';
 
-export const auth = getAuth(app);
+// Only initialize auth if Firebase app is available
+let auth: any = null;
+try {
+  if (app) {
+    auth = getAuth(app);
+  }
+} catch (error) {
+  console.warn('Firebase Auth initialization failed:', error);
+}
+
+export { auth };
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -68,6 +78,7 @@ export const createUserProfileDocument = async (user: User, additionalData: { di
 };
 
 export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
+  if (!db) return null;
   try {
     const userRef = doc(db, 'users', uid);
     const snapshot = await getDoc(userRef);
@@ -83,22 +94,26 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
 
 
 export const signInWithGoogle = async (userType: UserType) => {
+    if (!auth) throw new Error('Firebase Auth is not initialized. Please check your environment variables.');
     const result = await signInWithPopup(auth, googleProvider);
     await createUserProfileDocument(result.user, { userType });
 };
 
 export const signUpWithEmail = async (email: string, password: string, displayName: string, userType: UserType) => {
+    if (!auth) throw new Error('Firebase Auth is not initialized. Please check your environment variables.');
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
     await createUserProfileDocument(user, { displayName, userType });
 };
 
 export const signInWithEmail = async (email: string, password: string, userType: UserType) => {
+    if (!auth) throw new Error('Firebase Auth is not initialized. Please check your environment variables.');
     const { user } = await signInWithEmailAndPassword(auth, email, password);
     // Update user type if it's different (for existing users)
     await createUserProfileDocument(user, { userType });
 };
 
 export const signOut = async () => {
+  if (!auth) return;
   try {
     await firebaseSignOut(auth);
   } catch (error) {

@@ -15,15 +15,39 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase with performance optimizations
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Only initialize Firebase if we have valid config (prevents build-time errors)
+let app: any = null;
+let db: any = null;
+let storage: any = null;
 
-// Initialize Firestore with optimized settings
-const db = getFirestore(app);
+if (
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId
+) {
+  try {
+    // Initialize Firebase with performance optimizations
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    
+    // Initialize Firestore with optimized settings
+    db = getFirestore(app);
+    
+    // Initialize Storage
+    storage = getStorage(app);
+  } catch (error) {
+    console.warn('Firebase initialization failed:', error);
+    // Continue without Firebase - app will work but Firebase features won't
+  }
+} else {
+  console.warn('Firebase environment variables not set. Firebase features will be disabled.');
+}
 
 // Enable offline persistence for better performance (client-side only)
 // Must be enabled immediately before any Firestore operations
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && db) {
   import('firebase/firestore').then(({ enableIndexedDbPersistence }) => {
     enableIndexedDbPersistence(db).catch((err: any) => {
       if (err.code === 'failed-precondition') {
@@ -46,8 +70,6 @@ if (typeof window !== 'undefined') {
     console.warn('Could not enable Firestore persistence');
   });
 }
-
-const storage = getStorage(app);
 
 export default app;
 export { db, storage };

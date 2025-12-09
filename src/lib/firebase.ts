@@ -13,12 +13,28 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
+// Initialize Firebase only if config is valid (prevents build-time errors)
+let app: any = null;
+
+if (
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId
+) {
+  try {
+    if (!getApps().length) {
+      app = initializeApp(firebaseConfig);
+    } else {
+      app = getApps()[0];
+    }
+  } catch (error) {
+    console.warn('Firebase initialization failed:', error);
+  }
 } else {
-  app = getApps()[0];
+  console.warn('Firebase environment variables not set. Firebase features will be disabled.');
 }
 
 export default app;
