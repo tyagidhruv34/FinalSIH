@@ -71,7 +71,7 @@ export default function ResourceLocatorPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Community Map</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Community Map</h1>
         <p className="text-muted-foreground">
           Live map of user statuses and available resources.
         </p>
@@ -104,15 +104,15 @@ export default function ResourceLocatorPage() {
                     <ul className="space-y-4 max-h-[500px] overflow-y-auto">
                         {resources.map((resource) => (
                         <li key={resource.id} className="flex items-start gap-4">
-                            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                             <LucideIcon name={resource.icon} className="h-5 w-5" />
                             </div>
                             <div>
                             <h3 className="font-semibold">{resource.name}</h3>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-4xl text-muted-foreground">
                                 {resource.type}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-4xl text-muted-foreground">
                                 {resource.address}
                             </p>
                             </div>
@@ -141,15 +141,15 @@ export default function ResourceLocatorPage() {
                             <ul className="space-y-4 max-h-[500px] overflow-y-auto">
                                 {resourceNeeds.map((need) => (
                                 <li key={need.id} className="flex items-start gap-4">
-                                    <div className={`mt-1 flex h-8 w-8 items-center justify-center rounded-lg ${need.urgency === 'High' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-secondary-foreground'}`}>
+                                    <div className={`mt-1 flex h-12 w-12 items-center justify-center rounded-lg ${need.urgency === 'High' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-secondary-foreground'}`}>
                                         <LucideIcon name="PackageOpen" className="h-5 w-5" />
                                     </div>
                                     <div>
                                         <h3 className="font-semibold">{need.quantity}x {need.item}</h3>
-                                        <div className="text-sm text-muted-foreground">
+                                        <div className="text-4xl text-muted-foreground">
                                            Urgency: <Badge variant={need.urgency === 'High' ? 'destructive' : 'secondary'}>{need.urgency}</Badge>
                                         </div>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-4xl text-muted-foreground">
                                             Contact: {need.contactInfo}
                                         </p>
                                     </div>

@@ -25,7 +25,7 @@ export default function ProfilePage() {
     return (
       <div className="space-y-8 max-w-2xl mx-auto">
         <div className="space-y-1">
-          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-12 w-48" />
           <Skeleton className="h-4 w-64" />
         </div>
         <Card>
@@ -58,7 +58,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Your Profile</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Your Profile</h1>
         <p className="text-muted-foreground">
           View and manage your account details.
         </p>
@@ -75,13 +75,13 @@ export default function ProfilePage() {
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
               <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
-              <AvatarFallback className="text-2xl">
+              <AvatarFallback className="text-4xl">
                 {user.displayName ? user.displayName[0] : user.email ? user.email[0] : 'U'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-xl font-semibold">{user.displayName || 'Anonymous User'}</h3>
-              <p className="text-sm text-muted-foreground">{user.email || user.phoneNumber}</p>
+              <h3 className="text-4xl font-semibold">{user.displayName || 'Anonymous User'}</h3>
+              <p className="text-4xl text-muted-foreground">{user.email || user.phoneNumber}</p>
             </div>
           </div>
           

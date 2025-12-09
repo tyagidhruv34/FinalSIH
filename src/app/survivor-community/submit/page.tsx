@@ -105,7 +105,7 @@ export default function SubmitStoryPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Share Your Story</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Share Your Story</h1>
         <p className="text-muted-foreground mt-2">
           Your experience can offer hope and valuable lessons to others.
         </p>
@@ -123,13 +123,13 @@ export default function SubmitStoryPage() {
             <div className="space-y-2">
               <Label htmlFor="title">Title of Your Story</Label>
               <Controller name="title" control={control} render={({ field }) => <Input id="title" {...field} />} />
-              {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+              {errors.title && <p className="text-4xl text-destructive">{errors.title.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="story">Your Story</Label>
               <Controller name="story" control={control} render={({ field }) => <Textarea id="story" rows={8} {...field} />} />
-              {errors.story && <p className="text-sm text-destructive">{errors.story.message}</p>}
+              {errors.story && <p className="text-4xl text-destructive">{errors.story.message}</p>}
             </div>
             
             <div className="space-y-2">

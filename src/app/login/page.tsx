@@ -1,19 +1,30 @@
+"use client";
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthForm from "@/components/auth/auth-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import UserTypeSelector from "@/components/auth/user-type-selector";
+import { useAuth } from '@/hooks/use-auth';
+import type { UserType } from '@/lib/types';
 
 export default function LoginPage() {
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to Sankat Mochan</CardTitle>
-          <CardDescription>Sign in to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AuthForm />
-        </CardContent>
-      </Card>
-    </div>
-  );
+  const [selectedUserType, setSelectedUserType] = useState<UserType | null>(null);
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return null;
+  }
+
+  if (!selectedUserType) {
+    return <UserTypeSelector onSelect={setSelectedUserType} />;
+  }
+
+  return <AuthForm userType={selectedUserType} onBack={() => setSelectedUserType(null)} />;
 }

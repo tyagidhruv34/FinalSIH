@@ -128,18 +128,22 @@ export type AlertSource = {
   description: string;
 };
 
+export type UserType = 'citizen' | 'rescue_agency' | 'admin';
+
 export interface UserProfile {
   uid: string;
   email?: string | null;
   displayName?: string | null;
   photoURL?: string | null;
   phoneNumber?: string | null;
+  userType: UserType;
   createdAt: Date;
 }
 
 export type AuthContextType = {
   user: FirebaseUser | null;
+  userType: UserType | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (userType: UserType) => Promise<void>;
   signOut: () => Promise<void>;
 };

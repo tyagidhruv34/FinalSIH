@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
 import type { Alert, DamageReport, Resource, UserStatus } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
@@ -47,15 +47,18 @@ export default function RescueDashboardPage() {
 
     setLoading(true);
 
+    // Fetch SOS alerts - filter and sort in memory to avoid index requirement
     const sosAlertsQuery = query(
         collection(db, 'alerts'), 
-        where('severity', '==', 'Critical'),
-        orderBy('timestamp', 'desc')
+        orderBy('timestamp', 'desc'),
+        limit(100) // Fetch more to filter
     );
 
     const unsubscribeSosAlerts = onSnapshot(sosAlertsQuery, (snapshot) => {
-        const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert));
-        setSosAlerts(alerts);
+        const allAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert));
+        // Filter critical alerts in memory
+        const criticalAlerts = allAlerts.filter(alert => alert.severity === 'Critical');
+        setSosAlerts(criticalAlerts);
         setLoading(false);
     }, (err) => {
         console.error("Error fetching SOS alerts:", err);

@@ -20,7 +20,7 @@ export default function EmergencyContactsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Emergency Contacts</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Emergency Contacts</h1>
         <p className="text-muted-foreground">
           Quick access to important helplines and authorities.
         </p>
@@ -36,7 +36,7 @@ export default function EmergencyContactsPage() {
                 </div>
                 <div>
                   <CardTitle>{contact.name}</CardTitle>
-                  <p className="text-2xl font-bold text-primary">{contact.phone}</p>
+                  <p className="text-4xl font-bold text-primary">{contact.phone}</p>
                 </div>
               </div>
             </CardHeader>

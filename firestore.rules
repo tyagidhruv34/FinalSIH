@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to get user's profile data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Helper function to check user type
+    function isUserType(userType) {
+      return isAuthenticated() && getUserData().userType == userType;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isUserType('admin');
+    }
+    
+    // Helper function to check if user is rescue agency
+    function isRescueAgency() {
+      return isUserType('rescue_agency');
+    }
+    
+    // Helper function to check if user is citizen
+    function isCitizen() {
+      return isUserType('citizen');
+    }
+    
+    // Users collection - users can read their own profile, admins can read all
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Alerts collection - all authenticated users can read, admins and rescue agencies can create
+    match /alerts/{alertId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isRescueAgency());
+      allow update: if isAuthenticated() && (isAdmin() || isRescueAgency() || resource.data.createdBy == request.auth.uid);
+      allow delete: if isAdmin();
+      
+      // Translations subcollection
+      match /translations/{language} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+    
+    // User status collection - users can read all, create/update their own
+    match /user_status/{statusId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // Resource needs collection - all authenticated users can read, citizens can create
+    match /resource_needs/{needId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin() || isRescueAgency());
+      allow delete: if isAdmin();
+    }
+    
+    // Damage reports collection - all authenticated users can read, citizens can create
+    match /damage_reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Missing persons collection - all authenticated users can read, citizens can create
+    match /missing_persons/{personId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Survivor stories collection - all authenticated users can read, citizens can create
+    match /survivor_stories/{storyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Feedback collection - all authenticated users can read and create
+    match /feedback/{feedbackId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Weather alerts collection - all authenticated users can read and write (for syncing)
+    match /weather_alerts/{alertId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated(); // Any authenticated user can sync alerts
+      allow update: if isAuthenticated(); // Any authenticated user can update alerts
+      allow delete: if isAdmin(); // Only admins can delete
+    }
+    
+    // NDMA alerts collection - all authenticated users can read and write (for syncing)
+    match /ndma_alerts/{alertId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated(); // Any authenticated user can sync alerts
+      allow update: if isAuthenticated(); // Any authenticated user can update alerts
+      allow delete: if isAdmin(); // Only admins can delete
+    }
+    
+    // Deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

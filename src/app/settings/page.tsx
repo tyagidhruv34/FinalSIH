@@ -48,7 +48,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">{t('settings_title')}</h1>
+        <h1 className="text-4xl font-bold tracking-tight">{t('settings_title')}</h1>
         <p className="text-muted-foreground">
           {t('settings_description')}
         </p>
@@ -93,7 +93,7 @@ export default function SettingsPage() {
                 <Label htmlFor={source.id} className="font-medium">
                   {source.name}
                 </Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-4xl text-muted-foreground">
                   {source.description}
                 </p>
               </div>

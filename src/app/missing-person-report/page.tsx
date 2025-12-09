@@ -106,7 +106,7 @@ export default function MissingPersonReportPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Report a Missing Person</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Report a Missing Person</h1>
         <p className="text-muted-foreground mt-2">
           Provide details and a clear photo to help find them.
         </p>
@@ -139,25 +139,25 @@ export default function MissingPersonReportPage() {
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Controller name="name" control={control} render={({ field }) => <Input id="name" {...field} />} />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+              {errors.name && <p className="text-4xl text-destructive">{errors.name.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="age">Age (Approximate)</Label>
               <Controller name="age" control={control} render={({ field }) => <Input id="age" type="number" {...field} />} />
-              {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+              {errors.age && <p className="text-4xl text-destructive">{errors.age.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="lastSeenLocation">Last Seen Location</Label>
               <Controller name="lastSeenLocation" control={control} render={({ field }) => <Input id="lastSeenLocation" {...field} />} />
-              {errors.lastSeenLocation && <p className="text-sm text-destructive">{errors.lastSeenLocation.message}</p>}
+              {errors.lastSeenLocation && <p className="text-4xl text-destructive">{errors.lastSeenLocation.message}</p>}
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="contactInfo">Your Contact Information</Label>
               <Controller name="contactInfo" control={control} render={({ field }) => <Input id="contactInfo" placeholder="e.g., Phone number or email" {...field} />} />
-              {errors.contactInfo && <p className="text-sm text-destructive">{errors.contactInfo.message}</p>}
+              {errors.contactInfo && <p className="text-4xl text-destructive">{errors.contactInfo.message}</p>}
             </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting || !imageFile}>

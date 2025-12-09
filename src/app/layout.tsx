@@ -1,19 +1,16 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { PT_Sans } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import SidebarNav from '@/components/layout/sidebar-nav';
-import Header from '@/components/layout/header';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/hooks/use-auth';
 import { LanguageProvider } from '@/hooks/use-language';
-import Chatbot from '@/components/chatbot';
+import AuthLayout from '@/components/layout/auth-layout';
+import ChatbotWrapper from '@/components/chatbot-wrapper';
 
-
-// Leaflet CSS for react-leaflet
-import 'leaflet/dist/leaflet.css';
+// Leaflet CSS - load only when map is used
+// Moved to resource-map component
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -25,6 +22,11 @@ const ptSans = PT_Sans({
 export const metadata: Metadata = {
   title: 'Sankat Mochan',
   description: 'A disaster management app to help you stay safe.',
+  manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0ea5e9',
 };
 
 export default function RootLayout({
@@ -37,16 +39,10 @@ export default function RootLayout({
       <body className={cn("antialiased", 'min-h-screen bg-background font-sans', ptSans.variable)}>
         <AuthProvider>
           <LanguageProvider>
-            <SidebarProvider>
-                <div className="flex min-h-screen w-full">
-                  <SidebarNav />
-                  <div className="flex flex-1 flex-col">
-                    <Header />
-                    <main className="flex-1 p-4 sm:p-6 md:p-8">{children}</main>
-                  </div>
-                </div>
-                <Chatbot />
-            </SidebarProvider>
+            <AuthLayout>
+              {children}
+            </AuthLayout>
+            <ChatbotWrapper />
           </LanguageProvider>
         </AuthProvider>
         <Toaster />

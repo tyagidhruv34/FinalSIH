@@ -49,12 +49,12 @@ const createMarkerIcon = (icon: React.ReactElement, size: [number, number] = [32
 };
 
 const userSafeIcon = createMarkerIcon(
-    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center cursor-pointer shadow-md">
+    <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center cursor-pointer shadow-md">
         <UserCheck className="h-5 w-5 text-white" />
     </div>
 );
 const userHelpIcon = createMarkerIcon(
-    <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center cursor-pointer shadow-md">
+    <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center cursor-pointer shadow-md">
         <AlertTriangle className="h-5 w-5 text-white" />
     </div>
 );
@@ -69,25 +69,25 @@ const currentUserHelpIcon = createMarkerIcon(
 );
 
 const needLowUrgencyIcon = createMarkerIcon(
-    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer shadow-md">
+    <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer shadow-md">
         <PackageOpen className="h-5 w-5 text-white" />
     </div>
 );
 const needHighUrgencyIcon = createMarkerIcon(
-    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center cursor-pointer shadow-md">
+    <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center cursor-pointer shadow-md">
         <PackageOpen className="h-5 w-5 text-white" />
     </div>
 );
 
 const damageReportIcon = createMarkerIcon(
-    <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center cursor-pointer shadow-md">
+    <div className="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center cursor-pointer shadow-md">
         <Building2 className="h-5 w-5 text-white" />
     </div>
 );
 
 const getResourceMarkerIcon = (resource: Resource) => {
     return createMarkerIcon(
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer shadow-md">
+        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center cursor-pointer shadow-md">
             <LucideIcon name={resource.icon} className="h-5 w-5 text-primary-foreground" />
         </div>
     );
@@ -102,9 +102,28 @@ export default function ResourceMap({ resources, userStatuses = [], resourceNeed
     if (mapContainerRef.current && !mapRef.current) {
         mapRef.current = L.map(mapContainerRef.current).setView(center, zoom);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Use OpenStreetMap as base layer
+        const baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(mapRef.current);
+        
+        // Add weather map layer option (OpenWeatherMap)
+        // Using NEXT_PUBLIC_ prefix for client-side access
+        const weatherMapApiKey = process.env.NEXT_PUBLIC_WEATHER_MAP_API_KEY || 'c7836e6f71da09d60e0a00f506446f5d';
+        const weatherLayer = L.tileLayer(`https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${weatherMapApiKey}`, {
+            attribution: '&copy; <a href="https://openweathermap.org/">OpenWeatherMap</a>',
+            opacity: 0.6,
+            maxZoom: 19
+        });
+        
+        // Layer control for switching between base map and weather overlay
+        const baseMaps: { [key: string]: L.TileLayer } = {
+            "Base Map": baseLayer
+        };
+        const overlayMaps: { [key: string]: L.TileLayer } = {
+            "Temperature": weatherLayer
+        };
+        L.control.layers(baseMaps, overlayMaps).addTo(mapRef.current);
 
         markersRef.current = new L.LayerGroup().addTo(mapRef.current);
     }

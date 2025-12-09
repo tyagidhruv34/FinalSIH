@@ -144,13 +144,13 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
                 </Select>
               )}
             />
-            {errors.item && <p className="text-sm text-destructive">{errors.item.message}</p>}
+            {errors.item && <p className="text-4xl text-destructive">{errors.item.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="quantity">Quantity</Label>
             <Controller name="quantity" control={control} render={({ field }) => <Input id="quantity" type="number" {...field} />} />
-            {errors.quantity && <p className="text-sm text-destructive">{errors.quantity.message}</p>}
+            {errors.quantity && <p className="text-4xl text-destructive">{errors.quantity.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -169,13 +169,13 @@ export default function RequestResourceForm({ open, onOpenChange }: RequestResou
                 </Select>
               )}
             />
-             {errors.urgency && <p className="text-sm text-destructive">{errors.urgency.message}</p>}
+             {errors.urgency && <p className="text-4xl text-destructive">{errors.urgency.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="contactInfo">Contact Info</Label>
             <Controller name="contactInfo" control={control} render={({ field }) => <Input id="contactInfo" placeholder="Your phone or email" {...field} />} />
-            {errors.contactInfo && <p className="text-sm text-destructive">{errors.contactInfo.message}</p>}
+            {errors.contactInfo && <p className="text-4xl text-destructive">{errors.contactInfo.message}</p>}
           </div>
 
           <DialogFooter>

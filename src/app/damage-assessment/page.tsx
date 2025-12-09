@@ -114,11 +114,21 @@ export default function DamageAssessmentPage() {
 
     try {
       
-      const result = await assessDamage({
-        photoDataUri: imagePreview,
-        description: description,
-        location: location || undefined,
+      const response = await fetch('/api/assess-damage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoDataUri: imagePreview,
+          description,
+          location: location || undefined,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const result = await response.json();
       
       setAnalysisResult(result);
 
@@ -165,7 +175,7 @@ export default function DamageAssessmentPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">AI Damage Assessment</h1>
+        <h1 className="text-4xl font-bold tracking-tight">AI Damage Assessment</h1>
         <p className="text-muted-foreground mt-2">
           Upload an image of structural damage to get an AI-powered assessment.
         </p>
@@ -238,18 +248,18 @@ export default function DamageAssessmentPage() {
           <CardContent className="space-y-4">
              <div>
                 <Label className="text-xs font-semibold text-muted-foreground">Severity</Label>
-                <p className="text-2xl font-bold text-primary">{analysisResult.severity}</p>
+                <p className="text-4xl font-bold text-primary">{analysisResult.severity}</p>
              </div>
              <div>
                 <Label className="text-xs font-semibold text-muted-foreground">Confidence</Label>
                 <div className="flex items-center gap-2">
                     <Percent className="h-5 w-5 text-muted-foreground"/>
-                    <p className="text-xl font-semibold">{analysisResult.confidenceScore.toFixed(2)}%</p>
+                    <p className="text-4xl font-semibold">{analysisResult.confidenceScore.toFixed(2)}%</p>
                 </div>
              </div>
              <div>
                 <Label className="text-xs font-semibold text-muted-foreground">AI Reasoning</Label>
-                <p className="text-sm text-foreground/90 bg-muted/50 p-3 rounded-md border">{analysisResult.reasoning}</p>
+                <p className="text-4xl text-foreground/90 bg-muted/50 p-3 rounded-md border">{analysisResult.reasoning}</p>
              </div>
           </CardContent>
         </Card>

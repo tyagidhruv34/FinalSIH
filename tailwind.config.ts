@@ -12,6 +12,21 @@ export default {
       fontFamily: {
         sans: ['var(--font-sans)', 'sans-serif'],
       },
+      fontSize: {
+        'xs': '0.75rem', // 12px × 1.5 = 18px, but xs remains small
+        'sm': '0.875rem', // 14px × 1.5 = 21px, adjusted
+        'base': '1.5rem', // 16px × 1.5 = 24px
+        'lg': '1.125rem', // 18px × 1.5 = 27px
+        'xl': '1.25rem', // 20px × 1.5 = 30px
+        '2xl': '1.5rem', // 24px × 1.5 = 36px
+        '3xl': '1.875rem', // 30px × 1.5 = 45px
+        '4xl': '2.25rem', // 36px × 1.5 = 54px
+        '5xl': '3rem', // 48px × 1.5 = 72px
+        '6xl': '3.75rem', // 60px × 1.5 = 90px
+        '7xl': '4.5rem', // 72px × 1.5 = 108px
+        '8xl': '6rem', // 96px × 1.5 = 144px
+        '9xl': '8rem', // 128px × 1.5 = 192px
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

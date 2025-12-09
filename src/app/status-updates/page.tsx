@@ -42,7 +42,7 @@ export default function StatusUpdatesPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8">
        <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Update Your Status</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Update Your Status</h1>
         <p className="text-muted-foreground mt-2">
           Let your community and rescue teams know your current situation.
         </p>
@@ -57,26 +57,26 @@ export default function StatusUpdatesPage() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button
-                className="h-24 text-xl"
+                className="h-24 text-4xl"
                 onClick={() => onStatusUpdate('safe')}
                 disabled={!!isSubmittingPage}
               >
                  {isSubmittingPage === 'safe' ? (
                   <Loader2 className="animate-spin" />
                 ) : (
-                  <><CheckCircle className="mr-2 h-8 w-8" /> I'M SAFE</>
+                  <><CheckCircle className="mr-2 h-12 w-8" /> I'M SAFE</>
                 )}
               </Button>
               <Button
                 variant="destructive"
-                className="h-24 text-xl"
+                className="h-24 text-4xl"
                 onClick={() => onStatusUpdate('help')}
                 disabled={!!isSubmittingPage}
               >
                 {isSubmittingPage === 'help' ? (
                   <Loader2 className="animate-spin" />
                 ) : (
-                  <><AlertTriangle className="mr-2 h-8 w-8" /> NEED HELP</>
+                  <><AlertTriangle className="mr-2 h-12 w-8" /> NEED HELP</>
                 )}
               </Button>
           </CardContent>

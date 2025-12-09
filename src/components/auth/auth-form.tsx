@@ -8,13 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { auth, signUpWithEmail, signInWithEmail } from '@/lib/firebase/auth';
+import { signUpWithEmail, signInWithEmail } from '@/lib/firebase/auth';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { UserType } from '@/lib/types';
 
-export default function AuthForm() {
+interface AuthFormProps {
+  userType: UserType;
+  onBack?: () => void;
+}
+
+export default function AuthForm({ userType, onBack }: AuthFormProps) {
   const { user, signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -36,7 +43,7 @@ export default function AuthForm() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(userType);
       router.push('/');
     } catch (error: any) {
       if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
@@ -67,11 +74,11 @@ export default function AuthForm() {
                 setLoading(false);
                 return;
             }
-            await signUpWithEmail(email, password, displayName);
+            await signUpWithEmail(email, password, displayName, userType);
             toast({ title: 'Success!', description: 'Your account has been created.' });
             router.push('/');
         } else {
-            await signInWithEmail(email, password);
+            await signInWithEmail(email, password, userType);
             toast({ title: 'Success!', description: 'You are now logged in.' });
             router.push('/');
         }
@@ -80,8 +87,10 @@ export default function AuthForm() {
         if(error.code) {
             switch(error.code) {
                 case 'auth/email-already-in-use':
-                    friendlyMessage = 'This email is already in use. Please sign in instead.';
+                    friendlyMessage = 'This email is already registered. Switching to sign in...';
                     setActiveTab('signin'); // Switch to sign-in tab
+                    // Pre-fill email for convenience
+                    // Email is already set in state, so it will be preserved
                     break;
                 case 'auth/invalid-email':
                     friendlyMessage = 'Please enter a valid email address.';
@@ -109,9 +118,32 @@ export default function AuthForm() {
   }
 
 
+  const getUserTypeLabel = () => {
+    switch (userType) {
+      case 'citizen': return 'Citizen';
+      case 'rescue_agency': return 'Rescue Agency';
+      case 'admin': return 'Admin';
+    }
+  };
+
   return (
+    <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] bg-gradient-to-br from-background via-primary/5 to-accent/5 p-4">
+      <Card className="w-full max-w-md shadow-2xl border-2 animate-fade-in">
+        <CardHeader className="text-center relative pb-6">
+          {onBack && (
+            <Button variant="ghost" size="icon" className="absolute left-4 top-4 hover:bg-primary/10 transition-colors" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 mb-4">
+            <Shield className="h-7 w-7 text-primary" />
+          </div>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Welcome to Sankat Mochan</CardTitle>
+          <CardDescription className="text-base mt-2 font-medium">Sign in as {getUserTypeLabel()}</CardDescription>
+        </CardHeader>
+        <CardContent>
     <div className="space-y-6">
-      <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+      <Button variant="outline" className="w-full shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] border-2" onClick={handleGoogleSignIn}>
         <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
           <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
@@ -175,7 +207,9 @@ export default function AuthForm() {
             </form>
         </TabsContent>
       </Tabs>
-
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

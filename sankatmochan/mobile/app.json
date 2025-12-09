@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Sankatmochan",
+    "slug": "sankatsih",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "usesCleartextTraffic": true,
+      "package": "com.sankatmochan.mobile",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ]
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs location access to show your position on maps and help rescue teams find you.",
+        "NSLocationAlwaysUsageDescription": "This app needs location access to show your position on maps and help rescue teams find you.",
+        "NSCameraUsageDescription": "This app needs camera access to upload photos for damage assessment and missing person reports.",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to upload images for damage assessment and missing person reports.",
+        "NSMicrophoneUsageDescription": "This app needs microphone access for voice recognition features."
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5df112ad-3c74-4f84-8961-5526831e47d3"
+      },
+      "webAppUrl": "https://sankatmochan-p9ph.vercel.app"
+    }
+  }
+}

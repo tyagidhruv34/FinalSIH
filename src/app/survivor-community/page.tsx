@@ -87,7 +87,7 @@ export default function SurvivorCommunityPage() {
         <div className="flex items-center gap-4">
           <HeartHandshake className="h-10 w-10 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Survivor Community</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Survivor Community</h1>
             <p className="text-muted-foreground">
               Share stories of hope, resilience, and heroism.
             </p>
@@ -105,8 +105,8 @@ export default function SurvivorCommunityPage() {
       <Card className="bg-gradient-to-br from-yellow-50 to-amber-100 dark:from-yellow-900/20 dark:to-amber-900/30 border-amber-300 dark:border-amber-700">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Award className="h-8 w-8 text-amber-500" />
-            <CardTitle className="text-2xl text-amber-800 dark:text-amber-300">Heroes of the Community</CardTitle>
+            <Award className="h-12 w-12 text-amber-500" />
+            <CardTitle className="text-4xl text-amber-800 dark:text-amber-300">Heroes of the Community</CardTitle>
           </div>
           <CardDescription className="text-amber-700 dark:text-amber-400">Celebrating individuals who went above and beyond to help.</CardDescription>
         </CardHeader>
@@ -122,7 +122,7 @@ export default function SurvivorCommunityPage() {
                   <Avatar className="h-16 w-16 border-2 border-amber-400">
                      <AvatarFallback><User /></AvatarFallback>
                   </Avatar>
-                  <p className="font-bold text-sm">{heroStory.heroName}</p>
+                  <p className="font-bold text-4xl">{heroStory.heroName}</p>
                   <p className="text-xs text-muted-foreground">Nominated by {heroStory.userName}</p>
                 </div>
               ))}
@@ -136,7 +136,7 @@ export default function SurvivorCommunityPage() {
 
       {/* Survivor Stories Section */}
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight mb-4">Latest Stories</h2>
+        <h2 className="text-4xl font-semibold tracking-tight mb-4">Latest Stories</h2>
         {loading && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(3)].map((_, i) => (
@@ -188,11 +188,11 @@ export default function SurvivorCommunityPage() {
                 </div>
               </CardHeader>
               <CardContent className="flex-1">
-                <h3 className="font-bold text-lg mb-2">{story.title}</h3>
-                <p className="text-sm text-foreground/80 line-clamp-4">{story.story}</p>
+                <h3 className="font-bold text-4xl mb-2">{story.title}</h3>
+                <p className="text-4xl text-foreground/80 line-clamp-4">{story.story}</p>
               </CardContent>
               {story.heroName && (
-                <CardFooter className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 pt-4">
+                <CardFooter className="flex items-center gap-2 text-4xl text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 pt-4">
                     <Award className="h-5 w-5" />
                     <p>Recognized <span className="font-bold">{story.heroName}</span> as a hero.</p>
                 </CardFooter>

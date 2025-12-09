@@ -21,28 +21,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { useStatusUpdater } from "@/hooks/use-status-updater";
-import { Loader2, Mic, MicOff, PlayCircle } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
-import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { SaffronFlag } from "../ui/saffron-flag";
 
 
-const navItems = [
+// Navigation items for different user types
+const citizenNavItems = [
   { href: "/", label: "nav_dashboard", icon: "LayoutDashboard" },
-  { href: "/rescue", label: "nav_rescue_dashboard", icon: "LifeBuoy" },
   { href: "/learning-hub", label: "nav_learning_hub", icon: "GraduationCap" },
   { href: "/survivor-community", label: "nav_survivor_stories", icon: "HeartHandshake" },
   { href: "/damage-assessment", label: "nav_damage_assessment", icon: "Bot" },
@@ -55,9 +40,38 @@ const navItems = [
   { href: "/emergency-contacts", label: "nav_emergency_contacts", icon: "Phone" },
 ];
 
+const rescueAgencyNavItems = [
+  { href: "/", label: "nav_dashboard", icon: "LayoutDashboard" },
+  { href: "/rescue", label: "nav_rescue_dashboard", icon: "LifeBuoy" },
+  { href: "/missing-person-finder", label: "nav_find_person", icon: "Search" },
+  { href: "/resource-locator", label: "nav_resource_locator", icon: "MapPin" },
+  { href: "/emergency-contacts", label: "nav_emergency_contacts", icon: "Phone" },
+  { href: "/advisories", label: "nav_advisories", icon: "Landmark" },
+];
+
+const adminNavItems = [
+  { href: "/", label: "nav_dashboard", icon: "LayoutDashboard" },
+  { href: "/admin", label: "nav_admin", icon: "ShieldCheck" },
+  { href: "/rescue", label: "nav_rescue_dashboard", icon: "LifeBuoy" },
+  { href: "/advisories", label: "nav_advisories", icon: "Landmark" },
+  { href: "/resource-locator", label: "nav_resource_locator", icon: "MapPin" },
+];
+
+const getNavItems = (userType: string | null) => {
+  switch (userType) {
+    case 'citizen':
+      return citizenNavItems;
+    case 'rescue_agency':
+      return rescueAgencyNavItems;
+    case 'admin':
+      return adminNavItems;
+    default:
+      return [];
+  }
+};
+
 const secondaryNavItems = [
     { href: "/settings", label: "nav_settings", icon: "Settings" },
-    { href: "/admin", label: "nav_admin", icon: "ShieldCheck" },
     { href: "/feedback", label: "nav_feedback", icon: "Megaphone" },
 ]
 
@@ -73,76 +87,21 @@ const LucideIcon = ({ name, ...props }: { name: string;[key: string]: any }) => 
 
 export default function Header() {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
+  const { user, signOut, userType } = useAuth();
   const router = useRouter();
-  const { handleStatusUpdate } = useStatusUpdater();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useLanguage();
-  const { toast } = useToast();
 
-  const handleVoiceCommand = (command: string) => {
-    const lowerCaseCommand = command.toLowerCase();
-    if (lowerCaseCommand.includes('save me')) {
-        toast({ title: "Voice command recognized", description: "Sending SOS..." });
-        handleSos();
-    }
-  };
-  
-  const handleSos = async () => {
-    setIsSubmitting(true);
-    try {
-        await handleStatusUpdate('help');
-    } finally {
-        setIsSubmitting(false);
-    }
-  }
-
-  const { isListening, isSupported, startListening, stopListening } = useVoiceRecognition({
-    onCommand: handleVoiceCommand,
-    onError: (error) => {
-        // Don't show toast for "not-allowed" which happens if user denies mic permission
-        if (error !== 'not-allowed' && error !== 'no-speech') {
-             toast({
-                variant: "destructive",
-                title: "Voice Error",
-                description: `Could not start voice recognition: ${error}`,
-            });
-        }
-    }
-  });
-
+  const navItems = getNavItems(userType);
+  const allNavItems = [...navItems, ...secondaryNavItems];
 
   const handleSignOut = async () => {
     await signOut();
     router.push('/login');
   }
-  
-  const toggleListening = () => {
-      if (isListening) {
-          stopListening();
-      } else {
-          startListening();
-      }
-  }
-  
-  const handleDemo = () => {
-    toast({
-        title: "Voice Demo Started",
-        description: "Simulating: Now say 'save me'.",
-    });
-
-    setTimeout(() => {
-       toast({
-           title: "Command 'save me' recognized!",
-           description: "Sending SOS...",
-       });
-       handleSos();
-    }, 2500);
-  }
 
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:justify-end">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur-md shadow-sm px-4 sm:px-6 md:justify-end">
       <div className="md:hidden">
         <Sheet>
           <SheetTrigger asChild>
@@ -153,14 +112,16 @@ export default function Header() {
           </SheetTrigger>
           <SheetContent side="left" className="w-full max-w-xs p-0">
              <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-                <div className="flex items-center gap-2.5 p-4 border-b border-sidebar-border">
-                  <icons.ShieldAlert className="h-7 w-7 text-primary" />
-                  <span className="text-xl font-bold tracking-tight">
+                <div className="flex items-center gap-3 p-4 border-b border-sidebar-border bg-gradient-to-r from-[#FF9933]/20 via-[#FFFFFF]/10 to-[#138808]/20">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#FF9933] to-[#FF9933]/80 flex items-center justify-center shadow-lg">
+                    <SaffronFlag size={24} />
+                  </div>
+                  <span className="text-2xl font-bold tracking-tight">
                     {t('app_title')}
                   </span>
                 </div>
                 <nav className="flex-1 space-y-1 p-2">
-                  {[...navItems, ...secondaryNavItems].map((item) => (
+                  {allNavItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
@@ -177,44 +138,6 @@ export default function Header() {
       </div>
       
       <div className="flex items-center gap-2">
-        {user && isSupported && (
-            <Button variant="outline" size="icon" onClick={toggleListening} className={isListening ? 'text-destructive border-destructive animate-pulse' : ''}>
-                {isListening ? <MicOff /> : <Mic />}
-                <span className="sr-only">Toggle Voice Commands</span>
-            </Button>
-        )}
-        {user && !isSupported && (
-            <Button variant="outline" onClick={handleDemo}>
-                <PlayCircle className="mr-2"/>
-                Voice Demo
-            </Button>
-        )}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button size="lg" variant="destructive" disabled={!user || !!isSubmitting} className="h-12 text-base font-semibold shadow-md hover:bg-destructive/90">
-              {isSubmitting ? (
-                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              ) : (
-                <icons.Siren className="mr-2 h-6 w-6" />
-              )}
-                {t('header_sos')}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t('header_sos_confirm_title')}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t('header_sos_confirm_description')}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t('header_sos_confirm_cancel')}</AlertDialogCancel>
-              <AlertDialogAction onClick={handleSos}>{t('header_sos_confirm_action')}</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -111,7 +111,7 @@ export default function MissingPersonFinderPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Find a Missing Person</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Find a Missing Person</h1>
         <p className="text-muted-foreground mt-2">
           Upload a photo of a person you have found to see if they are in the missing persons database.
         </p>
@@ -146,7 +146,7 @@ export default function MissingPersonFinderPage() {
                 <><Search className="mr-2" /> Search for Match</>
               )}
             </Button>
-            {knownFaces.length === 0 && <p className="text-center text-sm text-muted-foreground">The missing persons gallery is currently empty.</p>}
+            {knownFaces.length === 0 && <p className="text-center text-4xl text-muted-foreground">The missing persons gallery is currently empty.</p>}
           </CardContent>
         </Card>
       </form>
@@ -172,8 +172,8 @@ export default function MissingPersonFinderPage() {
                   <Card key={match.id} className="overflow-hidden">
                     <Image src={match.photoUrl} alt={match.name} width={200} height={200} className="w-full object-cover aspect-square" />
                     <div className="p-4">
-                      <p className="font-bold text-lg">{match.name}</p>
-                      <p className="text-sm text-muted-foreground">Confidence: <span className="font-semibold text-primary">{match.confidenceScore.toFixed(2)}%</span></p>
+                      <p className="font-bold text-4xl">{match.name}</p>
+                      <p className="text-4xl text-muted-foreground">Confidence: <span className="font-semibold text-primary">{match.confidenceScore.toFixed(2)}%</span></p>
                       <Button className="w-full mt-2" size="sm" onClick={() => {
                         const person = knownFaces.find(p => p.id === match.id);
                         if (person) alert(`Contact information for ${person.name}'s reporter: ${person.contactInfo}`)

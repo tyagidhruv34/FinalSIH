@@ -15,9 +15,38 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Initialize Firebase with performance optimizations
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// Initialize Firestore with optimized settings
 const db = getFirestore(app);
+
+// Enable offline persistence for better performance (client-side only)
+// Must be enabled immediately before any Firestore operations
+if (typeof window !== 'undefined') {
+  import('firebase/firestore').then(({ enableIndexedDbPersistence }) => {
+    enableIndexedDbPersistence(db).catch((err: any) => {
+      if (err.code === 'failed-precondition') {
+        // Multiple tabs open, persistence can only be enabled in one tab
+        console.warn('Firestore persistence: Multiple tabs detected');
+      } else if (err.code === 'unimplemented') {
+        // Browser doesn't support persistence
+        console.warn('Firestore persistence not available');
+      } else if (err.code === 'unavailable') {
+        // Persistence already enabled or Firestore already started
+        // This is okay - just means persistence is already active
+        console.warn('Firestore persistence already enabled or unavailable');
+      } else {
+        // Other errors - log but don't break the app
+        console.warn('Firestore persistence error:', err.code);
+      }
+    });
+  }).catch(() => {
+    // If import fails, continue without persistence
+    console.warn('Could not enable Firestore persistence');
+  });
+}
+
 const storage = getStorage(app);
 
 export default app;

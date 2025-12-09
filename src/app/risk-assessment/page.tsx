@@ -73,7 +73,17 @@ export default function RiskAssessmentPage() {
     setError(null);
 
     try {
-      const result = await predictImpact(data);
+      const response = await fetch('/api/predict-impact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Request failed');
+      }
+
+      const result = await response.json();
       setAnalysisResult(result);
       toast({
         title: 'Assessment Complete',
@@ -95,7 +105,7 @@ export default function RiskAssessmentPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">AI Hyper-Local Risk Assessment</h1>
+        <h1 className="text-4xl font-bold tracking-tight">AI Hyper-Local Risk Assessment</h1>
         <p className="text-muted-foreground mt-2">
           Predict potential disaster impact on a specific area. (Prototype)
         </p>
@@ -124,7 +134,7 @@ export default function RiskAssessmentPage() {
                 )}
               />
               {errors.locationDescription && (
-                <p className="text-sm text-destructive">{errors.locationDescription.message}</p>
+                <p className="text-4xl text-destructive">{errors.locationDescription.message}</p>
               )}
             </div>
 
@@ -149,7 +159,7 @@ export default function RiskAssessmentPage() {
                 )}
               />
               {errors.disasterType && (
-                <p className="text-sm text-destructive">{errors.disasterType.message}</p>
+                <p className="text-4xl text-destructive">{errors.disasterType.message}</p>
               )}
             </div>
 
@@ -183,23 +193,23 @@ export default function RiskAssessmentPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 <div className="flex flex-col items-center justify-center p-6 bg-muted rounded-lg">
-                    <Label className="text-sm font-semibold text-muted-foreground">RISK SCORE</Label>
+                    <Label className="text-4xl font-semibold text-muted-foreground">RISK SCORE</Label>
                     <p className="text-7xl font-bold text-primary">{analysisResult.riskScore}</p>
-                    <p className="text-sm text-muted-foreground">out of 100</p>
+                    <p className="text-4xl text-muted-foreground">out of 100</p>
                 </div>
                 <div>
                      <Label className="text-xs font-semibold text-muted-foreground">Evacuation</Label>
-                     <p className={`text-2xl font-bold ${recommendationStyles[analysisResult.evacuationRecommendation]}`}>{analysisResult.evacuationRecommendation}</p>
+                     <p className={`text-4xl font-bold ${recommendationStyles[analysisResult.evacuationRecommendation]}`}>{analysisResult.evacuationRecommendation}</p>
                 </div>
             </div>
 
             <div>
               <Label className="text-xs font-semibold text-muted-foreground">Potential Impact</Label>
-              <p className="text-sm text-foreground/90 bg-muted/50 p-3 rounded-md border">{analysisResult.potentialImpact}</p>
+              <p className="text-4xl text-foreground/90 bg-muted/50 p-3 rounded-md border">{analysisResult.potentialImpact}</p>
             </div>
              <div>
               <Label className="text-xs font-semibold text-muted-foreground">AI Reasoning</Label>
-              <p className="text-sm text-foreground/90 bg-muted/50 p-3 rounded-md border">{analysisResult.reasoning}</p>
+              <p className="text-4xl text-foreground/90 bg-muted/50 p-3 rounded-md border">{analysisResult.reasoning}</p>
             </div>
           </CardContent>
         </Card>

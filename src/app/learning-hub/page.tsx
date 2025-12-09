@@ -10,24 +10,23 @@ import { GraduationCap, Film, Gamepad2, Check, X, Box, Droplets, Utensils, Brief
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 
-// To change a video, simply update the 'src' URL in the list below.
-// Make sure the URL is the "embed" version from YouTube.
+// Local video files stored in public/videos/ for offline access
 const educationalVideos = [
   {
     title: "Earthquake Safety Video",
-    src: "https://www.youtube.com/embed/MllUVQM3KVk",
+    src: "/videos/SSYouTube.online_How to Protect Yourself During an Earthquake  Disasters_720p.mp4",
   },
   {
     title: "Fire Extinguisher Training Video (P.A.S.S.)",
-    src: "https://www.youtube.com/embed/GVBamXXVD30",
+    src: "/videos/How to Use a Fire Extinguisher 720p.mp4",
   },
   {
     title: "Build an Emergency Kit",
-    src: "https://www.youtube.com/embed/KKN7Ewht1DQ",
+    src: "/videos/SSYouTube.online_How to build an Emergency Preparedness Kit_720p.mp4",
   },
   {
     title: "Flood Safety",
-    src: "https://www.youtube.com/embed/pi_nUPcQz_A",
+    src: "/videos/SSYouTube.online_How To Survive Floods  Preparing For A Flood  The Dr Binocs Show  Peekaboo Kidz_720p.mp4",
   },
 ];
 
@@ -131,7 +130,7 @@ export default function LearningHubPage() {
       <div className="flex items-center gap-4">
         <GraduationCap className="h-10 w-10 text-primary" />
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Student Learning Hub</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Student Learning Hub</h1>
             <p className="text-muted-foreground">
                 Learn how to stay safe with videos and interactive quizzes.
             </p>
@@ -151,14 +150,16 @@ export default function LearningHubPage() {
           {educationalVideos.map((video) => (
             <div key={video.title} className="space-y-2 group">
               <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{video.title}</h3>
-              <div className="aspect-video overflow-hidden rounded-lg border-2 border-transparent group-hover:border-primary transition-all group-hover:shadow-lg">
-                <iframe
+              <div className="aspect-video overflow-hidden rounded-lg border-2 border-transparent group-hover:border-primary transition-all group-hover:shadow-lg bg-black">
+                <video
                   className="w-full h-full"
-                  src={video.src}
-                  title={`${video.title} Video`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+                  controls
+                  preload="metadata"
+                  title={video.title}
+                >
+                  <source src={video.src} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </div>
           ))}
@@ -176,10 +177,10 @@ export default function LearningHubPage() {
                 const Icon = item.icon;
                 return (
                     <div key={item.name} className={`flex items-center gap-4 p-4 rounded-lg ${item.color} transition-transform hover:scale-105`}>
-                        <Icon className="h-8 w-8" />
+                        <Icon className="h-12 w-8" />
                         <div>
                             <p className="font-semibold">{item.name}</p>
-                            <p className="text-sm opacity-80">{item.description}</p>
+                            <p className="text-4xl opacity-80">{item.description}</p>
                         </div>
                     </div>
                 );
@@ -202,25 +203,25 @@ export default function LearningHubPage() {
                 <div className="text-center space-y-4 p-4 rounded-lg bg-background">
                      <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300">
                         <finalScoreMessage.icon className="h-6 w-6 text-green-600 dark:text-green-400" />
-                        <AlertTitle className="text-2xl font-bold">Quiz Finished!</AlertTitle>
-                        <AlertDescription className="text-lg">
+                        <AlertTitle className="text-4xl font-bold">Quiz Finished!</AlertTitle>
+                        <AlertDescription className="text-4xl">
                             Your final score is: <span className="font-bold text-primary">{score} / {quizQuestions.length}</span>
                         </AlertDescription>
                     </Alert>
-                    <p className="text-lg font-semibold">{finalScoreMessage.message}</p>
+                    <p className="text-4xl font-semibold">{finalScoreMessage.message}</p>
                     <Button onClick={restartQuiz}>Play Again</Button>
                 </div>
             ) : (
             <>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm font-medium text-muted-foreground">
+                  <div className="flex justify-between items-center text-4xl font-medium text-muted-foreground">
                     <span>Question {currentQuestionIndex + 1} of {quizQuestions.length}</span>
                     <span>Score: {score}</span>
                   </div>
                   <Progress value={((currentQuestionIndex + 1) / quizQuestions.length) * 100} className="w-full h-2" />
                 </div>
                 <div>
-                <p className="font-semibold text-lg mb-4">{currentQuestion.question}</p>
+                <p className="font-semibold text-4xl mb-4">{currentQuestion.question}</p>
                 <RadioGroup value={selectedAnswer || ""} onValueChange={setSelectedAnswer} className="space-y-2">
                     {currentQuestion.options.map((option) => (
                     <div key={option} className={`flex items-center space-x-3 p-3 rounded-md border-2 transition-all ${showResult ? (option === currentQuestion.correctAnswer ? 'border-green-500 bg-green-100/50 dark:bg-green-900/30' : (option === selectedAnswer ? 'border-red-500 bg-red-100/50 dark:bg-red-900/30' : 'border-border')) : 'border-border hover:border-primary cursor-pointer'}`}>
